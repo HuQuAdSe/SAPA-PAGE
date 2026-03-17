@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ABAP — La guía definitiva desde cero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0f1117;
+    --surface:   #181c27;
+    --card:      #1e2235;
+    --border:    #2a2f45;
+    --accent:    #f0a500;
+    --accent2:   #3b82f6;
+    --accent3:   #22d3a5;
+    --danger:    #ef4444;
+    --warn:      #f59e0b;
+    --success:   #22c55e;
+    --text:      #e2e8f0;
+    --muted:     #8892a4;
+    --code-bg:   #12151f;
+    --keyword:   #f0a500;
+    --string:    #22d3a5;
+    --comment:   #4a5568;
+    --type:      #818cf8;
+    --func:      #38bdf8;
+    --var:       #e2e8f0;
+    --number:    #fb923c;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 300px; min-width: 300px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    height: 100vh;
+    position: sticky; top: 0;
+    overflow-y: auto; overflow-x: hidden;
+    display: flex; flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .sidebar-logo {
+    padding: 28px 22px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo .logo-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--accent);
+    letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .sidebar-logo h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800; color: var(--text); line-height: 1.2;
+  }
+  .sidebar-logo h1 span { color: var(--accent); }
+  .sidebar-logo .version-badge {
+    display: inline-block; margin-top: 8px; padding: 2px 8px;
+    background: rgba(240,165,0,0.12);
+    border: 1px solid rgba(240,165,0,0.3);
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--accent);
+  }
+  .sidebar nav { padding: 16px 0; flex: 1; }
+  .nav-group-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--muted);
+    padding: 16px 22px 6px;
+  }
+  .sidebar a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 22px; text-decoration: none;
+    color: var(--muted); font-size: 13px; font-weight: 400;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+  .sidebar a:hover, .sidebar a.active {
+    color: var(--text); background: rgba(240,165,0,0.06);
+    border-left-color: var(--accent);
+  }
+  .sidebar a .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--border); flex-shrink: 0; transition: background 0.15s;
+  }
+  .sidebar a:hover .dot, .sidebar a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  .main { flex: 1; overflow-x: hidden; max-width: calc(100vw - 300px); }
+
+  .hero {
+    padding: 70px 60px 60px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--bg) 0%, #161a2a 100%);
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: 'ABAP';
+    position: absolute; right: -20px; top: -30px;
+    font-family: 'Syne', sans-serif; font-size: 200px; font-weight: 800;
+    color: rgba(240,165,0,0.04);
+    pointer-events: none; user-select: none; line-height: 1;
+  }
+  .hero .pretitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--accent);
+    letter-spacing: 4px; text-transform: uppercase; margin-bottom: 18px;
+  }
+  .hero h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 4vw, 52px); font-weight: 800;
+    line-height: 1.1; margin-bottom: 20px;
+  }
+  .hero h2 em { color: var(--accent); font-style: normal; }
+  .hero p { max-width: 620px; color: var(--muted); font-size: 15px; line-height: 1.8; }
+  .stats-row { display: flex; gap: 30px; margin-top: 40px; flex-wrap: wrap; }
+  .stat-pill {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 18px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 8px; font-size: 13px;
+  }
+  .stat-pill .n {
+    font-family: 'Syne', sans-serif; font-size: 22px;
+    font-weight: 800; color: var(--accent);
+  }
+  .stat-pill .lbl { color: var(--muted); }
+
+  /* ── CONTENT ── */
+  .content { padding: 0 60px 80px; }
+
+  .section {
+    padding-top: 70px; padding-bottom: 60px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.4s ease both;
+  }
+  .section:last-child { border-bottom: none; }
+
+  .section-header {
+    display: flex; align-items: flex-start; gap: 18px; margin-bottom: 32px;
+  }
+  .section-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0; margin-top: 4px;
+  }
+  .icon-amber  { background: rgba(240,165,0,0.12);  border: 1px solid rgba(240,165,0,0.3); }
+  .icon-blue   { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); }
+  .icon-green  { background: rgba(34,211,165,0.12); border: 1px solid rgba(34,211,165,0.3); }
+  .icon-red    { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.3); }
+  .icon-purple { background: rgba(129,140,248,0.12);border: 1px solid rgba(129,140,248,0.3); }
+  .icon-sky    { background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3); }
+
+  .section-title-area h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px; font-weight: 700; margin-bottom: 6px;
+  }
+  .section-title-area .subtitle { color: var(--muted); font-size: 14px; }
+
+  /* ── PROSE ── */
+  p { margin-bottom: 14px; font-size: 14.5px; }
+  p:last-child { margin-bottom: 0; }
+  .highlight { color: var(--accent); font-weight: 500; }
+
+  h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 19px; font-weight: 700;
+    margin: 32px 0 12px; color: var(--text);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3:first-child { margin-top: 0; }
+
+  h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+    margin: 20px 0 8px; color: var(--accent3);
+  }
+
+  /* ── CODE BLOCK ── */
+  .code-wrap {
+    margin: 22px 0; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; background: #0d0f18;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-dots { display: flex; gap: 6px; }
+  .code-dots span { width: 11px; height: 11px; border-radius: 50%; }
+  .cd1 { background: #ff5f57; }
+  .cd2 { background: #ffbd2e; }
+  .cd3 { background: #27c93f; }
+  .code-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--muted); letter-spacing: 1px;
+  }
+  pre {
+    background: var(--code-bg); padding: 22px 24px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.75;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  }
+
+  /* SYNTAX */
+  .kw  { color: var(--keyword); font-weight: 700; }
+  .str { color: var(--string); }
+  .cmt { color: var(--comment); font-style: italic; }
+  .tp  { color: var(--type); }
+  .fn  { color: var(--func); }
+  .nm  { color: var(--number); }
+  .vr  { color: var(--var); }
+  .sy  { color: #f472b6; }
+  .op  { color: #c084fc; }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px; margin: 22px 0;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px; transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(240,165,0,0.4); }
+  .card .card-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--accent); margin-bottom: 8px; letter-spacing: 1px;
+  }
+  .card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 700; margin-bottom: 8px;
+    color: var(--text); border: none; padding: 0; margin-top: 0;
+  }
+  .card p { font-size: 13.5px; color: var(--muted); margin: 0; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-radius: 10px; padding: 18px 22px; margin: 22px 0;
+    display: flex; gap: 14px; align-items: flex-start; font-size: 14px;
+  }
+  .callout-amber { background: rgba(240,165,0,0.08); border: 1px solid rgba(240,165,0,0.25); }
+  .callout-blue  { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.25); }
+  .callout-green { background: rgba(34,211,165,0.08); border: 1px solid rgba(34,211,165,0.25); }
+  .callout-red   { background: rgba(239,68,68,0.08);  border: 1px solid rgba(239,68,68,0.25); }
+  .callout-purple{ background: rgba(129,140,248,0.08);border: 1px solid rgba(129,140,248,0.25); }
+  .callout-icon  { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout-body  { flex: 1; }
+  .callout-body strong { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
+  .callout-body p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.7; }
+  .callout-body p + p { margin-top: 8px; }
+
+  /* ── TABLE ── */
+  .ref-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13.5px; margin: 22px 0;
+    border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .ref-table th {
+    background: #0d0f18; padding: 10px 16px; text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 1px; border-bottom: 1px solid var(--border);
+  }
+  .ref-table td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    vertical-align: top; line-height: 1.6;
+  }
+  .ref-table tr:last-child td { border-bottom: none; }
+  .ref-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .ref-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent); font-size: 12px; white-space: nowrap;
+  }
+
+  /* ── MSG DEMO ── */
+  .msg-demo {
+    border-radius: 8px; padding: 12px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; margin: 8px 0; border-left: 3px solid;
+  }
+  .msg-s { background: rgba(34,197,94,0.08);  border-color: #22c55e; color: #4ade80; }
+  .msg-e { background: rgba(239,68,68,0.08);  border-color: #ef4444; color: #f87171; }
+  .msg-w { background: rgba(245,158,11,0.08); border-color: #f59e0b; color: #fbbf24; }
+  .msg-i { background: rgba(59,130,246,0.08); border-color: #3b82f6; color: #93c5fd; }
+
+  /* ── POINTER DIAGRAM ── */
+  .pointer-viz {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 24px; margin: 22px 0;
+    display: flex; align-items: center; gap: 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    overflow-x: auto; flex-wrap: wrap; gap: 12px;
+  }
+  .pv-box {
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 12px 16px; background: var(--card);
+    text-align: center; min-width: 120px; flex-shrink: 0;
+  }
+  .pv-box .pv-label { color: var(--muted); font-size: 10px; margin-bottom: 6px; }
+  .pv-box .pv-val   { color: var(--accent3); font-size: 13px; }
+  .pv-box.pv-ptr    { border-color: rgba(240,165,0,0.5); background: rgba(240,165,0,0.05); }
+  .pv-box.pv-ptr .pv-val { color: var(--accent); }
+  .pv-arrow {
+    display: flex; align-items: center; padding: 0 14px;
+    color: var(--accent); font-size: 20px; flex-shrink: 0;
+  }
+
+  /* ── ALV DEMO ── */
+  .alv-demo {
+    border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; margin: 22px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  }
+  .alv-toolbar {
+    background: #1a1e2e; padding: 8px 14px;
+    display: flex; gap: 8px; align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .alv-btn {
+    padding: 3px 10px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 4px;
+    color: var(--muted); font-size: 11px; cursor: default;
+  }
+  .alv-grid-header {
+    display: grid; grid-template-columns: 90px 1fr 110px 90px;
+    background: #141828; border-bottom: 1px solid var(--border);
+  }
+  .alv-grid-header div {
+    padding: 7px 12px; color: var(--muted); font-size: 11px;
+    border-right: 1px solid var(--border); font-weight: 700;
+  }
+  .alv-row {
+    display: grid; grid-template-columns: 90px 1fr 110px 90px;
+    border-bottom: 1px solid rgba(42,47,69,0.5);
+  }
+  .alv-row:nth-child(even) { background: rgba(255,255,255,0.02); }
+  .alv-row:hover { background: rgba(240,165,0,0.05); }
+  .alv-row div {
+    padding: 7px 12px; color: var(--text);
+    border-right: 1px solid rgba(42,47,69,0.5); font-size: 12px;
+  }
+  .alv-row .pass { color: var(--success); }
+  .alv-row .fail { color: var(--danger); }
+
+  /* ── INLINE CODE ── */
+  code {
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+    background: rgba(240,165,0,0.1); color: var(--accent);
+    padding: 1px 6px; border-radius: 4px;
+  }
+
+  /* ── STEP BLOCK ── */
+  .steps { margin: 22px 0; }
+  .step {
+    display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start;
+  }
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); color: var(--bg);
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-body { flex: 1; }
+  .step-body strong {
+    display: block; font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700; margin-bottom: 4px;
+    color: var(--text);
+  }
+  .step-body p { margin: 0; font-size: 14px; color: var(--muted); }
+
+  /* ── COMPARE TABLE ── */
+  .compare {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; margin: 22px 0;
+  }
+  .compare-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px;
+  }
+  .compare-box.good { border-top: 3px solid var(--success); }
+  .compare-box.bad  { border-top: 3px solid var(--danger); }
+  .compare-box .compare-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    font-weight: 700; letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .compare-box.good .compare-label { color: var(--success); }
+  .compare-box.bad  .compare-label { color: var(--danger); }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-block; padding: 2px 9px; border-radius: 20px;
+    font-size: 11px; font-family: 'JetBrains Mono', monospace; font-weight: 500;
+  }
+  .badge-amber { background: rgba(240,165,0,0.15); color: var(--accent); }
+  .badge-blue  { background: rgba(59,130,246,0.15); color: #93c5fd; }
+  .badge-green { background: rgba(34,211,165,0.15); color: var(--accent3); }
+  .badge-red   { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 30px 0; }
+  .sep {
+    display: flex; align-items: center; gap: 12px;
+    margin: 40px 0 20px; color: var(--muted);
+    font-size: 11px; font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
+  }
+  .sep::before, .sep::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  ul { padding-left: 20px; margin: 10px 0 14px; }
+  ul li { font-size: 14px; color: var(--muted); margin-bottom: 7px; line-height: 1.65; }
+  ul li strong { color: var(--text); }
+  ol { padding-left: 20px; margin: 10px 0 14px; }
+  ol li { font-size: 14px; color: var(--muted); margin-bottom: 7px; line-height: 1.65; }
+  ol li strong { color: var(--text); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { max-width: 100vw; }
+    .hero, .content { padding-left: 24px; padding-right: 24px; }
+    .compare { grid-template-columns: 1fr; }
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════ SIDEBAR ══════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-tag">Guía Personal</div>
+    <h1>ABAP <span>SAP</span></h1>
+    <div class="version-badge">SAP GUI 8000.1.0.1161</div>
+  </div>
+  <nav>
+    <div class="nav-group-title">Fundamentos</div>
+    <a href="#intro"><span class="dot"></span>¿Qué es ABAP?</a>
+    <a href="#programa"><span class="dot"></span>Estructura de un programa</a>
+    <a href="#naming"><span class="dot"></span>Convenciones de nombres</a>
+    <a href="#types"><span class="dot"></span>TYPES — Moldes</a>
+    <a href="#data"><span class="dot"></span>DATA — Variables</a>
+
+    <div class="nav-group-title">Pantalla de Selección</div>
+    <a href="#parameters"><span class="dot"></span>PARAMETERS</a>
+    <a href="#selscreen"><span class="dot"></span>SELECT-OPTIONS</a>
+    <a href="#pushbutton"><span class="dot"></span>PUSHBUTTON</a>
+    <a href="#listbox"><span class="dot"></span>LISTBOX + VRM_SET_VALUES</a>
+    <a href="#radiobutton"><span class="dot"></span>RADIOBUTTON GROUP</a>
+    <a href="#usercommand"><span class="dot"></span>USER-COMMAND</a>
+    <a href="#screen-dynamic"><span class="dot"></span>LOOP AT SCREEN</a>
+    <a href="#block"><span class="dot"></span>BLOCK WITH FRAME</a>
+
+    <div class="nav-group-title">Eventos y Sistema</div>
+    <a href="#events"><span class="dot"></span>Eventos del programa</a>
+    <a href="#sy"><span class="dot"></span>Variables sy- (el salpicadero)</a>
+
+    <div class="nav-group-title">Lógica & Control</div>
+    <a href="#if"><span class="dot"></span>IF / ELSEIF / ELSE</a>
+    <a href="#case"><span class="dot"></span>CASE / WHEN</a>
+    <a href="#loop"><span class="dot"></span>LOOP AT</a>
+    <a href="#do"><span class="dot"></span>DO n TIMES</a>
+
+    <div class="nav-group-title">Tablas Internas</div>
+    <a href="#tables"><span class="dot"></span>Qué son</a>
+    <a href="#append"><span class="dot"></span>APPEND, READ, CLEAR</a>
+    <a href="#fieldsymbols"><span class="dot"></span>Field Symbols &lt;fs_&gt;</a>
+    <a href="#groupby"><span class="dot"></span>GROUP BY en LOOP</a>
+
+    <div class="nav-group-title">Herramientas</div>
+    <a href="#messages"><span class="dot"></span>MESSAGE — Tipos</a>
+    <a href="#functions"><span class="dot"></span>CALL FUNCTION</a>
+    <a href="#perform"><span class="dot"></span>PERFORM / FORM</a>
+    <a href="#strings"><span class="dot"></span>Strings & Matemáticas</a>
+    <a href="#write"><span class="dot"></span>WRITE</a>
+
+    <div class="nav-group-title">ALV & OOP</div>
+    <a href="#alv-classic"><span class="dot"></span>ALV Clásico</a>
+    <a href="#alv-oo"><span class="dot"></span>ALV OO (cl_salv_table)</a>
+    <a href="#alv-masks"><span class="dot"></span>Máscaras (set_edit_mask)</a>
+    <a href="#alv-currency"><span class="dot"></span>Moneda (set_currency)</a>
+    <a href="#alv-zero"><span class="dot"></span>Ocultar ceros (set_zero)</a>
+    <a href="#alv-visibility"><span class="dot"></span>Visibilidad dinámica</a>
+    <a href="#docking"><span class="dot"></span>Docking Container</a>
+    <a href="#oop"><span class="dot"></span>OOP — Clases y TRY/CATCH</a>
+  </nav>
+</aside>
+
+<!-- ══════ MAIN ══════ -->
+<main class="main">
+
+  <div class="hero">
+    <div class="pretitle">// La guía que te lleva de 0 a entenderlo todo</div>
+    <h2>ABAP explicado como si<br><em>tuvieras 5 años.</em></h2>
+    <p>Cada concepto, cada instrucción, cada variable. No se da nada por sabido. Todo se explica desde el principio, con ejemplos de tus propios programas.</p>
+    <div class="stats-row">
+      <div class="stat-pill"><span class="n">35+</span><span class="lbl">Conceptos cubiertos</span></div>
+      <div class="stat-pill"><span class="n">8</span><span class="lbl">Programas analizados</span></div>
+      <div class="stat-pill"><span class="n">GUI</span><span class="lbl">8000.1.0.1161 · 64bit</span></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+<!-- ══════════ 1. QUÉ ES ABAP ══════════ -->
+<section class="section" id="intro">
+  <div class="section-header">
+    <div class="section-icon icon-amber">🌐</div>
+    <div class="section-title-area">
+      <h2>¿Qué es ABAP?</h2>
+      <div class="subtitle">El lenguaje de SAP: cómo funciona y por qué es así</div>
+    </div>
+  </div>
+
+  <p><strong>ABAP</strong> son las siglas de <em>Advanced Business Application Programming</em>. Es el lenguaje de programación propio de SAP. SAP es una empresa alemana que fabrica software de gestión empresarial (ERP) que usan miles de empresas en todo el mundo. ABAP es el lenguaje que permite personalizar y crear programas dentro de ese entorno.</p>
+
+  <p>Imagina que SAP es un edificio enorme con miles de habitaciones ya construidas (transacciones estándar). ABAP es el lenguaje que te permite reformar una habitación, construir una nueva o conectar varias habitaciones para crear un flujo de trabajo a medida. No puedes cambiar los cimientos del edificio, pero sí adaptar el espacio a las necesidades de tu empresa.</p>
+
+  <h3>¿Dónde se ejecuta ABAP?</h3>
+  <p>ABAP no se ejecuta en tu ordenador personal. Tú escribes el código en el editor de SAP (usando la aplicación SAP GUI, la que tienes instalada con versión 8000.1.0.1161), pero el programa se guarda y se ejecuta en un <strong>servidor SAP central</strong>. Cuando ejecutas un programa, el servidor lo procesa y te envía el resultado a tu pantalla. Esto es muy diferente a lenguajes como Python o JavaScript, que se ejecutan localmente.</p>
+
+  <h3>El punto y final: el separador de sentencias</h3>
+  <p>En ABAP, cada sentencia termina con un punto <code>.</code> (punto y final). Es como el punto y coma <code>;</code> en otros lenguajes. Si olvidas el punto, SAP te dará un error porque no sabe dónde acaba la instrucción.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Ejemplo mínimo</div>
+    </div>
+    <pre><span class="kw">WRITE</span> <span class="str">'Hola mundo'</span>.   <span class="cmt">" El punto indica que aquí termina la orden</span></pre>
+  </div>
+
+  <div class="callout callout-blue">
+    <div class="callout-icon">🧠</div>
+    <div class="callout-body">
+      <strong>Los comentarios</strong>
+      <p>Todo lo que va después de <code>"</code> (doble comilla) en una línea es un comentario. SAP lo ignora completamente. Sirve para explicar qué hace el código.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 2. ESTRUCTURA DE UN PROGRAMA ══════════ -->
+<section class="section" id="programa">
+  <div class="section-header">
+    <div class="section-icon icon-amber">📜</div>
+    <div class="section-title-area">
+      <h2>La estructura de un programa REPORT</h2>
+      <div class="subtitle">Los bloques que componen cualquier programa ABAP</div>
+    </div>
+  </div>
+
+  <p>Los programas que has escrito son de tipo <code>REPORT</code>. Son los más comunes. Tienen una estructura fija, aunque no todos los bloques son obligatorios. Vamos a ver el esqueleto típico y luego cada pieza por separado.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Estructura básica de un REPORT</div>
+    </div>
+    <pre><span class="kw">REPORT</span> zejercicio_xx.
+
+<span class="cmt">" 1. Declaraciones globales (TYPES, DATA, TABLES, CONSTANTS...)</span>
+<span class="kw">TYPES</span>: ...
+<span class="kw">DATA</span>:  ...
+<span class="kw">TABLES</span>: ...
+
+<span class="cmt">" 2. Pantalla de selección (opcional)</span>
+<span class="kw">SELECTION-SCREEN BEGIN OF BLOCK</span> ...
+  <span class="kw">PARAMETERS</span>: ...
+  <span class="kw">SELECT-OPTIONS</span>: ...
+<span class="kw">SELECTION-SCREEN END OF BLOCK</span> ...
+
+<span class="cmt">" 3. Evento INITIALIZATION (opcional, se ejecuta antes de mostrar la pantalla)</span>
+<span class="kw">INITIALIZATION</span>.
+  ...
+
+<span class="cmt">" 4. Evento AT SELECTION-SCREEN (opcional, reacciona a acciones del usuario)</span>
+<span class="kw">AT SELECTION-SCREEN</span>.
+  ...
+
+<span class="cmt">" 5. Evento AT SELECTION-SCREEN OUTPUT (opcional, se ejecuta antes de dibujar la pantalla)</span>
+<span class="kw">AT SELECTION-SCREEN OUTPUT</span>.
+  ...
+
+<span class="cmt">" 6. Evento START-OF-SELECTION (el "main", se ejecuta al pulsar Ejecutar)</span>
+<span class="kw">START-OF-SELECTION</span>.
+  ...
+
+<span class="cmt">" 7. Subrutinas (FORM) al final (opcional)</span>
+<span class="kw">FORM</span> ...
+<span class="kw">ENDFORM</span>.</pre>
+  </div>
+
+  <p>Todo lo que está fuera de los eventos (como <code>TYPES</code>, <code>DATA</code>) se declara al principio y es <strong>global</strong>: cualquier evento o subrutina puede ver esas variables. Lo que se declara dentro de un evento o subrutina es <strong>local</strong> y solo existe ahí.</p>
+
+  <div class="callout callout-amber">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>Importante:</strong> Los eventos no se llaman unos a otros. SAP los llama en el orden adecuado según lo que haga el usuario. Por eso no ves una función <code>main()</code> que lo controle todo.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 3. CONVENCIONES DE NOMBRES ══════════ -->
+<section class="section" id="naming">
+  <div class="section-header">
+    <div class="section-icon icon-amber">📛</div>
+    <div class="section-title-area">
+      <h2>Convenciones de nombres (los prefijos)</h2>
+      <div class="subtitle">Cómo saber de un vistazo qué tipo de variable es</div>
+    </div>
+  </div>
+
+  <p>En ABAP es muy común usar prefijos de 2-3 letras para indicar el tipo y el ámbito de una variable. No es obligatorio, pero el 99% de los programadores lo hacen porque hace el código muchísimo más legible.</p>
+
+  <p>Por ejemplo, si ves <code>ls_producto</code> en el código, inmediatamente sabes que es una <strong>estructura local</strong> (una sola fila de datos). No necesitas buscar su declaración para saberlo.</p>
+
+  <h3>Tabla completa de prefijos (con ejemplos de tus programas)</h3>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>Prefijo</th><th>Significado</th><th>Qué contiene</th><th>Ejemplo</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ty_</td>
+        <td>Type (molde)</td>
+        <td>Una definición de tipo, no contiene datos. Es un plano.</td>
+        <td><code>ty_producto</code>, <code>ty_tarea</code></td>
+      </tr>
+      <tr>
+        <td>tt_</td>
+        <td>Table Type (tipo tabla)</td>
+        <td>El tipo de una tabla interna (lista de filas).</td>
+        <td><code>tt_productos</code>, <code>tt_numeros</code></td>
+      </tr>
+      <tr>
+        <td>ls_</td>
+        <td>Local Structure</td>
+        <td>Una estructura (una fila) que solo existe en el ámbito local (dentro de un evento o FORM).</td>
+        <td><code>ls_cat</code>, <code>ls_tarea</code></td>
+      </tr>
+      <tr>
+        <td>lt_</td>
+        <td>Local Table</td>
+        <td>Una tabla interna local.</td>
+        <td><code>lt_catalogo</code>, <code>lt_productos</code></td>
+      </tr>
+      <tr>
+        <td>gs_</td>
+        <td>Global Structure</td>
+        <td>Estructura declarada al principio del programa, accesible desde cualquier parte.</td>
+        <td><code>gs_coleccionEmpleado</code></td>
+      </tr>
+      <tr>
+        <td>gt_</td>
+        <td>Global Table</td>
+        <td>Tabla interna global.</td>
+        <td><code>gt_tablaInternaempleados</code></td>
+      </tr>
+      <tr>
+        <td>gr_</td>
+        <td>Global Reference</td>
+        <td>Referencia a un objeto (OOP).</td>
+        <td><code>gr_alv</code>, <code>gr_dock</code></td>
+      </tr>
+      <tr>
+        <td>lv_</td>
+        <td>Local Variable</td>
+        <td>Variable simple local (número, texto, fecha).</td>
+        <td><code>lv_contador</code></td>
+      </tr>
+      <tr>
+        <td>p_</td>
+        <td>Parameter</td>
+        <td>Parámetro de pantalla de selección.</td>
+        <td><code>p_lista</code>, <code>p_cmpn</code></td>
+      </tr>
+      <tr>
+        <td>&lt;fs_&gt;</td>
+        <td>Field Symbol</td>
+        <td>Puntero a datos. No guarda datos, apunta a ellos.</td>
+        <td><code>&lt;fs_tarea&gt;</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-green">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <strong>Consejo:</strong> Acostúmbrate a usar estos prefijos desde el principio. Cuando tu programa tenga 500 líneas, te alegrarás de haberlo hecho.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 4. TYPES ══════════ -->
+<section class="section" id="types">
+  <div class="section-header">
+    <div class="section-icon icon-purple">🧩</div>
+    <div class="section-title-area">
+      <h2>TYPES — Los moldes de datos</h2>
+      <div class="subtitle">Definir la forma de los datos sin ocupar memoria</div>
+    </div>
+  </div>
+
+  <p><code>TYPES</code> sirve para definir un <strong>tipo de datos</strong>. Piensa en él como un molde para hacer galletas: defines la forma (redonda, con borde ondulado), pero aún no has hecho ninguna galleta. No ocupa memoria, solo describe cómo serán los datos cuando los crees.</p>
+
+  <h3>Estructura: BEGIN OF … END OF</h3>
+  <p>Cuando necesitas agrupar varios campos relacionados (como los datos de un producto: ID, nombre, precio), defines una estructura con <code>BEGIN OF</code> y <code>END OF</code>.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">zejercicio_5_sq_botones.abap</div>
+    </div>
+    <pre><span class="cmt">" Definimos el molde para un producto</span>
+<span class="kw">TYPES</span>: <span class="kw">BEGIN OF</span> <span class="tp">ty_producto</span>,   <span class="cmt">" ← nombre del molde</span>
+         id     <span class="kw">TYPE</span> <span class="tp">string</span>,     <span class="cmt">" ← campo id de tipo texto</span>
+         nombre <span class="kw">TYPE</span> <span class="tp">string</span>,     <span class="cmt">" ← campo nombre de tipo texto</span>
+       <span class="kw">END OF</span> <span class="tp">ty_producto</span>.    <span class="cmt">" ← fin del molde</span>
+
+<span class="cmt">" Ahora ty_producto es un tipo que tiene dos campos: id y nombre.</span>
+<span class="cmt">" Todavía no hay ninguna variable en memoria que use este molde.</span></pre>
+  </div>
+
+  <h3>Tipos de datos básicos</h3>
+  <p>Dentro de una estructura, cada campo tiene un tipo. Los más comunes son:</p>
+
+  <table class="ref-table">
+    <thead><tr><th>Tipo</th><th>Nombre</th><th>Qué guarda</th><th>Valor inicial</th></tr></thead>
+    <tbody>
+      <tr><td>string</td><td>Cadena de longitud variable</td><td>Texto de cualquier tamaño</td><td>vacío ( '')</td></tr>
+      <tr><td>i</td><td>Entero</td><td>Números enteros (sin decimales)</td><td>0</td></tr>
+      <tr><td>p DECIMALS n</td><td>Empaquetado</td><td>Números con n decimales exactos</td><td>0</td></tr>
+      <tr><td>char10</td><td>Texto de longitud fija 10</td><td>Texto de exactamente 10 caracteres (se rellena con espacios)</td><td>10 espacios</td></tr>
+      <tr><td>d</td><td>Fecha</td><td>Fecha en formato AAAAMMDD</td><td>00000000</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Tipo tabla: TABLE OF</h3>
+  <p>Una vez que tienes el molde de una fila, puedes definir el molde de una lista de esas filas: una tabla interna.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Tipo tabla</div>
+    </div>
+    <pre><span class="kw">TYPES</span>: <span class="tp">tt_productos</span> <span class="kw">TYPE TABLE OF</span> <span class="tp">ty_producto</span> <span class="kw">WITH EMPTY KEY</span>.
+<span class="cmt">"   ↑                   ↑                   ↑                ↑</span>
+<span class="cmt">" nombre del tipo    "tabla de"         el tipo de cada fila   "sin clave" (ABAP moderno)</span>
+
+<span class="cmt">" Ahora tt_productos es un tipo que representa una lista de productos.</span></pre>
+  </div>
+
+  <div class="callout callout-amber">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>WITH EMPTY KEY</strong> es una exigencia de ABAP moderno (desde 7.40). Le dices a SAP que esta tabla no tiene una clave primaria especial, es solo una lista. No te preocupes por ello ahora.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 5. DATA ══════════ -->
+<section class="section" id="data">
+  <div class="section-header">
+    <div class="section-icon icon-blue">📦</div>
+    <div class="section-title-area">
+      <h2>DATA — Crear variables (ocupar memoria)</h2>
+      <div class="subtitle">Aquí es cuando realmente reservas espacio para guardar datos</div>
+    </div>
+  </div>
+
+  <p>Si <code>TYPES</code> es el plano de un edificio, <code>DATA</code> es construir el edificio. Cuando declaras una variable con <code>DATA</code>, SAP reserva un espacio en la memoria del servidor para que puedas guardar valores.</p>
+
+  <p>Toda variable tiene un <strong>valor inicial</strong> por defecto: los textos empiezan vacíos, los números en 0, las tablas sin filas, las referencias a objetos en "null" (INITIAL).</p>
+
+  <h3>Formas de declarar DATA</h3>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Todos los patrones que has usado</div>
+    </div>
+    <pre><span class="cmt">" 1. Estructura (una fila) basada en un tipo definido con TYPES</span>
+<span class="kw">DATA</span>: <span class="vr">ls_cat</span> <span class="kw">TYPE</span> <span class="tp">ty_producto</span>.
+<span class="cmt">"     ↑      ↑</span>
+<span class="cmt">"   nombre   "del tipo ty_producto"</span>
+<span class="cmt">" Ahora ls_cat tiene dos campos: ls_cat-id y ls_cat-nombre, ambos vacíos.</span>
+
+<span class="cmt">" 2. Tabla interna (lista) basada en un tipo tabla</span>
+<span class="kw">DATA</span>: <span class="vr">lt_catalogo</span> <span class="kw">TYPE</span> <span class="tp">tt_productos</span>.
+<span class="cmt">" Es una tabla vacía (0 filas).</span>
+
+<span class="cmt">" 3. Variable simple con valor inicial</span>
+<span class="kw">DATA</span>: <span class="vr">lv_contador</span> <span class="kw">TYPE</span> <span class="tp">i</span> <span class="kw">VALUE</span> <span class="nm">0</span>.
+<span class="cmt">" VALUE 0 es opcional porque los números ya empiezan en 0.</span>
+
+<span class="cmt">" 4. Referencia a un objeto (OOP)</span>
+<span class="kw">DATA</span>: <span class="vr">gr_alv</span> <span class="kw">TYPE REF TO</span> <span class="fn">cl_salv_table</span>.
+<span class="cmt">" gr_alv no apunta a ningún objeto todavía. Está INITIAL.</span>
+
+<span class="cmt">" 5. Estructura de trabajo para una tabla del diccionario (necesario para SELECT-OPTIONS)</span>
+<span class="kw">TABLES</span>: <span class="tp">sflight</span>.
+<span class="cmt">" Esto declara una estructura llamada sflight con los mismos campos que la tabla de base de datos sflight.</span>
+<span class="cmt">" No es una tabla interna, es una estructura de una sola fila.</span></pre>
+  </div>
+
+  <h3>Cómo acceder a los campos de una estructura</h3>
+  <p>Para leer o escribir un campo concreto de una estructura, usas el guión <code>-</code>. No es un signo menos, es el separador de campos en ABAP.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Acceso a campos</div>
+    </div>
+    <pre><span class="vr">ls_cat</span>-id     = <span class="str">'1'</span>.        <span class="cmt">" Asigna '1' al campo id de la estructura ls_cat</span>
+<span class="vr">ls_cat</span>-nombre = <span class="str">'Laptop'</span>.   <span class="cmt">" Asigna 'Laptop' al campo nombre</span>
+<span class="kw">WRITE</span>: <span class="vr">ls_cat</span>-nombre.       <span class="cmt">" Muestra 'Laptop'</span></pre>
+  </div>
+
+  <div class="callout callout-red">
+    <div class="callout-icon">🚨</div>
+    <div class="callout-body">
+      <strong>¡Ojo!</strong> El punto y coma no existe en ABAP. Las instrucciones terminan con punto. No pongas punto y coma después de cada línea o tendrás errores.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 6. PARAMETERS ══════════ -->
+<section class="section" id="parameters">
+  <div class="section-header">
+    <div class="section-icon icon-amber">🖥️</div>
+    <div class="section-title-area">
+      <h2>PARAMETERS — Campos de entrada en pantalla</h2>
+      <div class="subtitle">La forma más simple de pedir un dato al usuario</div>
+    </div>
+  </div>
+
+  <p><code>PARAMETERS</code> crea automáticamente un campo de entrada en la pantalla de selección (la pantalla gris que aparece antes de que el programa se ejecute). El usuario escribe un valor y, al pulsar Ejecutar, ese valor se guarda en la variable que declaraste.</p>
+
+  <p>SAP se encarga de todo: dibuja el campo, le asigna una etiqueta (el nombre de la variable, pero puedes cambiarlo con elementos de texto), y si el tipo de dato lo permite, añade ayuda de búsqueda (F4).</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Ejemplos de PARAMETERS</div>
+    </div>
+    <pre><span class="cmt">" Parámetro simple de tipo texto (char10)</span>
+<span class="kw">PARAMETERS</span>: <span class="vr">p_nombre</span> <span class="kw">TYPE</span> <span class="tp">char10</span>.
+
+<span class="cmt">" Parámetro que hereda el tipo de un campo de base de datos (del diccionario SAP)</span>
+<span class="kw">PARAMETERS</span>: <span class="vr">p_carrid</span> <span class="kw">TYPE</span> <span class="tp">sflight-carrid</span>.
+<span class="cmt">" Esto hace que el campo tenga la misma longitud, validaciones y ayuda F4 que el campo carrid de la tabla sflight.</span>
+
+<span class="cmt">" Parámetro que se convierte en un desplegable (LISTBOX)</span>
+<span class="kw">PARAMETERS</span>: <span class="vr">p_lista</span> <span class="kw">TYPE</span> <span class="tp">char10</span> <span class="kw">AS LISTBOX VISIBLE LENGTH</span> <span class="nm">40</span>.
+<span class="cmt">" AS LISTBOX: dibuja un combo box en lugar de un campo de texto.</span>
+<span class="cmt">" VISIBLE LENGTH 40: ancho en caracteres del desplegable.</span>
+
+<span class="cmt">" Radiobuttons (botones de opción)</span>
+<span class="kw">PARAMETERS</span>: <span class="vr">rb_opc1</span> <span class="kw">RADIOBUTTON GROUP</span> grp1.
+<span class="kw">PARAMETERS</span>: <span class="vr">rb_opc2</span> <span class="kw">RADIOBUTTON GROUP</span> grp1.
+<span class="cmt">" Ambos pertenecen al grupo 'grp1'. Solo uno puede estar marcado a la vez.</span></pre>
+  </div>
+
+  <div class="callout callout-blue">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <strong>¿Qué es sflight-carrid?</strong>
+      <p><code>sflight</code> es una tabla de base de datos que SAP proporciona para ejemplos (vuelos). <code>carrid</code> es un campo de esa tabla (identificador de aerolínea). Al escribir <code>TYPE sflight-carrid</code> le estás diciendo a SAP: "crea un campo con el mismo tipo que tiene ese campo en la base de datos". Así te ahorras tener que recordar si es char 3 o char 10.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 7. SELECT-OPTIONS ══════════ -->
+<section class="section" id="selscreen">
+  <div class="section-header">
+    <div class="section-icon icon-amber">🎛️</div>
+    <div class="section-title-area">
+      <h2>SELECT-OPTIONS — Rangos de selección</h2>
+      <div class="subtitle">Cuando un solo valor no basta: permite rangos, exclusiones y múltiples valores</div>
+    </div>
+  </div>
+
+  <p>Un <code>SELECT-OPTIONS</code> es como un PARAMETERS pero mucho más potente. El usuario puede introducir:</p>
+  <ul>
+    <li>Un valor único: <code>100</code></li>
+    <li>Un rango: <code>100</code> a <code>200</code></li>
+    <li>Una lista: <code>100, 150, 200</code></li>
+    <li>Exclusiones: <code>distinto de 150</code></li>
+    <li>Patrones: <code>1*</code> (todo lo que empiece por 1)</li>
+  </ul>
+
+  <p>En la pantalla, aparece un campo con un botón a la derecha. Al pulsarlo, se abre una ventana donde el usuario puede añadir todas las condiciones que quiera.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Declaración de SELECT-OPTIONS</div>
+    </div>
+    <pre><span class="kw">TABLES</span>: <span class="tp">sflight</span>.  <span class="cmt">" Obligatorio para referenciar campos de esa tabla</span>
+
+<span class="kw">SELECT-OPTIONS</span>: <span class="vr">so_conn</span> <span class="kw">FOR</span> <span class="tp">sflight-connid</span>.
+<span class="cmt">"                ↑              ↑</span>
+<span class="cmt">"           nombre de la   campo de referencia</span>
+<span class="cmt">"           variable</span></pre>
+  </div>
+
+  <p>Internamente, <code>so_conn</code> se convierte en una tabla con cuatro columnas. Cada fila representa una condición. La tabla tiene este aspecto:</p>
+
+  <table class="ref-table">
+    <thead><tr><th>Campo</th><th>Significado</th><th>Valores ejemplo</th></tr></thead>
+    <tbody>
+      <tr><td>SIGN</td><td>Incluir (I) o Excluir (E)</td><td>'I' para incluir, 'E' para excluir</td></tr>
+      <tr><td>OPTION</td><td>Operador</td><td>'EQ' (igual), 'BT' (entre), 'CP' (contiene patrón), 'GT' (mayor que)...</td></tr>
+      <tr><td>LOW</td><td>Valor inferior (o único)</td><td>'100'</td></tr>
+      <tr><td>HIGH</td><td>Valor superior (solo para rangos)</td><td>'200'</td></tr>
+    </tbody>
+  </table>
+
+  <p>Cuando luego uses esa variable en una sentencia SQL (por ejemplo, <code>SELECT ... WHERE connid IN so_conn</code>), SAP evaluará automáticamente todas las condiciones que el usuario introdujo.</p>
+
+  <div class="callout callout-amber">
+    <div class="callout-icon">🎯</div>
+    <div class="callout-body">
+      <strong>Ejemplo de uso en START-OF-SELECTION:</strong>
+      <pre style="background:none; padding:0; margin:5px 0 0; font-size:12px;"><span class="kw">SELECT</span> * <span class="kw">FROM</span> sflight <span class="kw">INTO TABLE</span> lt_vuelos <span class="kw">WHERE</span> connid <span class="kw">IN</span> so_conn.</pre>
+      SAP hará la consulta teniendo en cuenta todos los rangos y exclusiones que puso el usuario. Tú no tienes que escribir ningún IF.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 8. PUSHBUTTON ══════════ -->
+<section class="section" id="pushbutton">
+  <div class="section-header">
+    <div class="section-icon icon-amber">🔘</div>
+    <div class="section-title-area">
+      <h2>PUSHBUTTON — Botones personalizados</h2>
+      <div class="subtitle">Añadir botones propios a la pantalla de selección</div>
+    </div>
+  </div>
+
+  <p>Por defecto, la pantalla de selección solo tiene los botones estándar de SAP: Ejecutar (F8), Cancelar, etc. Con <code>PUSHBUTTON</code> puedes añadir tus propios botones, como "Añadir", "Eliminar" o "Calcular".</p>
+
+  <p>Cada botón tiene un <strong>USER-COMMAND</strong>, que es un código (hasta 20 caracteres) que SAP guarda en la variable del sistema <code>sy-ucomm</code> cuando el usuario pulsa el botón. Así puedes saber qué botón se pulsó.</p>
+
+  <h3>Paso a paso</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Declarar el botón en la pantalla de selección</strong>
+        <p>Usas <code>SELECTION-SCREEN PUSHBUTTON</code>. Le das una posición (fila/columna), un nombre de variable que contendrá el texto del botón, y un USER-COMMAND.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Asignar el texto visible en INITIALIZATION</strong>
+        <p>En el evento <code>INITIALIZATION</code>, asignas a esa variable el texto que quieres que muestre el botón (por ejemplo, 'Añadir').</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Reaccionar en AT SELECTION-SCREEN</strong>
+        <p>En <code>AT SELECTION-SCREEN</code>, compruebas el valor de <code>sy-ucomm</code> para saber qué botón se pulsó y ejecutar la acción correspondiente.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">zejercicio_5_sq_botones.abap</div>
+    </div>
+    <pre><span class="cmt">" 1. Declaración (arriba, con los DATA)</span>
+<span class="kw">DATA</span>: <span class="vr">btn_add</span> <span class="kw">TYPE</span> <span class="tp">char10</span>,   <span class="cmt">" texto del botón Añadir</span>
+      <span class="vr">btn_fin</span> <span class="kw">TYPE</span> <span class="tp">char10</span>.   <span class="cmt">" texto del botón Finalizar</span>
+
+<span class="kw">SELECTION-SCREEN</span>:
+  <span class="kw">PUSHBUTTON</span> <span class="nm">/1</span>(<span class="nm">10</span>) <span class="vr">btn_add</span> <span class="kw">USER-COMMAND</span> add,
+  <span class="kw">PUSHBUTTON</span> <span class="nm">25</span>(<span class="nm">10</span>) <span class="vr">btn_fin</span> <span class="kw">USER-COMMAND</span> fin.
+
+<span class="cmt">" 2. En INITIALIZATION asignamos los textos</span>
+<span class="kw">INITIALIZATION</span>.
+  <span class="vr">btn_add</span> = <span class="str">'Añadir'</span>.
+  <span class="vr">btn_fin</span> = <span class="str">'Finalizar'</span>.
+
+<span class="cmt">" 3. En AT SELECTION-SCREEN detectamos la pulsación</span>
+<span class="kw">AT SELECTION-SCREEN</span>.
+  <span class="kw">CASE</span> <span class="sy">sy-ucomm</span>.
+    <span class="kw">WHEN</span> <span class="str">'ADD'</span>.
+      <span class="cmt">" Lógica para añadir producto</span>
+    <span class="kw">WHEN</span> <span class="str">'FIN'</span>.
+      <span class="cmt">" Lógica para finalizar pedido</span>
+  <span class="kw">ENDCASE</span>.</pre>
+  </div>
+
+  <div class="callout callout-red">
+    <div class="callout-icon">🚨</div>
+    <div class="callout-body">
+      <strong>Mayúsculas en USER-COMMAND:</strong> SAP convierte automáticamente el comando a mayúsculas. Si en el WHEN pones <code>'Add'</code> no coincidirá. Pon siempre <code>'ADD'</code>.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 9. LISTBOX + VRM_SET_VALUES ══════════ -->
+<section class="section" id="listbox">
+  <div class="section-header">
+    <div class="section-icon icon-green">📋</div>
+    <div class="section-title-area">
+      <h2>LISTBOX — Desplegables dinámicos</h2>
+      <div class="subtitle">Cómo llenar un combo box con valores de tu programa</div>
+    </div>
+  </div>
+
+  <p>Para crear un desplegable (combo box) en la pantalla de selección, necesitas dos cosas:</p>
+  <ol>
+    <li>Declarar un <code>PARAMETERS</code> con la adición <code>AS LISTBOX</code>.</li>
+    <li>Llenar una tabla especial llamada <code>vrm_values</code> y pasársela al módulo de función <code>VRM_SET_VALUES</code> en <code>INITIALIZATION</code>.</li>
+  </ol>
+
+  <p><code>vrm_values</code> es un tipo de datos de SAP que tiene dos campos:</p>
+  <ul>
+    <li><code>key</code>: el valor interno que recibirá la variable del parámetro.</li>
+    <li><code>text</code>: el texto que verá el usuario en el desplegable.</li>
+  </ul>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Flujo completo de LISTBOX</div>
+    </div>
+    <pre><span class="cmt">" 1. Declaración del parámetro</span>
+<span class="kw">PARAMETERS</span>: <span class="vr">p_lista</span> <span class="kw">TYPE</span> <span class="tp">char10</span> <span class="kw">AS LISTBOX VISIBLE LENGTH</span> <span class="nm">40</span>.
+
+<span class="cmt">" 2. En INITIALIZATION, preparamos las opciones</span>
+<span class="kw">INITIALIZATION</span>.
+  <span class="kw">DATA</span>: <span class="vr">lt_valores</span> <span class="kw">TYPE</span> <span class="tp">vrm_values</span>,   <span class="cmt">" tabla de opciones</span>
+        <span class="vr">ls_valor</span>   <span class="kw">TYPE</span> <span class="tp">vrm_value</span>.   <span class="cmt">" fila de la tabla</span>
+
+  <span class="cmt">" Supongamos que tenemos una tabla lt_catalogo con los productos</span>
+  <span class="kw">LOOP AT</span> <span class="vr">lt_catalogo</span> <span class="kw">INTO</span> <span class="vr">ls_cat</span>.
+    <span class="vr">ls_valor</span>-key  = <span class="vr">ls_cat</span>-id.      <span class="cmt">" el ID que guardaremos</span>
+    <span class="vr">ls_valor</span>-text = <span class="vr">ls_cat</span>-nombre.   <span class="cmt">" el texto visible</span>
+    <span class="kw">APPEND</span> <span class="vr">ls_valor</span> <span class="kw">TO</span> <span class="vr">lt_valores</span>.
+  <span class="kw">ENDLOOP</span>.
+
+  <span class="cmt">" 3. Llamamos al módulo de función que conecta la tabla con el campo</span>
+  <span class="kw">CALL FUNCTION</span> <span class="str">'VRM_SET_VALUES'</span>
+    <span class="kw">EXPORTING</span>
+      id     = <span class="str">'P_LISTA'</span>      <span class="cmt">" nombre del PARAMETERS en MAYÚSCULAS</span>
+      values = <span class="vr">lt_valores</span>.</pre>
+  </div>
+
+  <div class="callout callout-red">
+    <div class="callout-icon">🚨</div>
+    <div class="callout-body">
+      <strong>Error mortal:</strong> El parámetro <code>id</code> de <code>VRM_SET_VALUES</code> debe ir en mayúsculas. Si pones <code>'p_lista'</code> en minúsculas, el desplegable aparecerá vacío y no sabrás por qué.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 10. RADIOBUTTON GROUP ══════════ -->
+<section class="section" id="radiobutton">
+  <div class="section-header">
+    <div class="section-icon icon-blue">🔵</div>
+    <div class="section-title-area">
+      <h2>RADIOBUTTON GROUP — Botones de opción</h2>
+      <div class="subtitle">Elegir una opción entre varias</div>
+    </div>
+  </div>
+
+  <p>Los radiobuttons se declaran con <code>PARAMETERS</code> y la adición <code>RADIOBUTTON GROUP</code>. Todos los que compartan el mismo grupo pertenecen al mismo conjunto: solo uno puede estar marcado a la vez.</p>
+
+  <p>Cada radiobutton es una variable de tipo <code>char1</code>. Cuando está marcado, su valor es <code>'X'</code>. Cuando no, es un espacio (<code>' '</code>).</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Radiobuttons</div>
+    </div>
+    <pre><span class="kw">PARAMETERS</span>: <span class="vr">rb_bas</span> <span class="kw">RADIOBUTTON GROUP</span> mod <span class="kw">DEFAULT</span> <span class="str">'X'</span>,
+            <span class="vr">rb_fin</span> <span class="kw">RADIOBUTTON GROUP</span> mod,
+            <span class="vr">rb_com</span> <span class="kw">RADIOBUTTON GROUP</span> mod.
+
+<span class="cmt">" En START-OF-SELECTION podemos preguntar:</span>
+<span class="kw">IF</span> <span class="vr">rb_bas</span> = <span class="str">'X'</span>.
+  <span class="cmt">" Modo básico activado</span>
+<span class="kw">ELSEIF</span> <span class="vr">rb_fin</span> = <span class="str">'X'</span>.
+  <span class="cmt">" Modo financiero</span>
+<span class="kw">ELSE</span>.
+  <span class="cmt">" Modo completo</span>
+<span class="kw">ENDIF</span>.</pre>
+  </div>
+</section>
+
+<!-- ══════════ 11. USER-COMMAND EN RADIOBUTTON ══════════ -->
+<section class="section" id="usercommand">
+  <div class="section-header">
+    <div class="section-icon icon-blue">⚡</div>
+    <div class="section-title-area">
+      <h2>USER-COMMAND en radiobuttons</h2>
+      <div class="subtitle">Forzar la actualización de la pantalla al cambiar de opción</div>
+    </div>
+  </div>
+
+  <p>Cuando el usuario cambia de radiobutton, la pantalla no se redibuja automáticamente. Para que los cambios (como activar/desactivar campos) se vean al instante, necesitas que al pulsar el radiobutton se dispare un evento de pantalla. Eso se consigue añadiendo <code>USER-COMMAND</code> al grupo.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">zejercicio_15_sq_dia6.abap</div>
+    </div>
+    <pre><span class="kw">PARAMETERS</span>: <span class="vr">rb_bas</span> <span class="kw">RADIOBUTTON GROUP</span> mod <span class="kw">USER-COMMAND</span> click <span class="kw">DEFAULT</span> <span class="str">'X'</span>,
+            <span class="vr">rb_fin</span> <span class="kw">RADIOBUTTON GROUP</span> mod,
+            <span class="vr">rb_com</span> <span class="kw">RADIOBUTTON GROUP</span> mod.</pre>
+  </div>
+
+  <p>Con <code>USER-COMMAND click</code>, cada vez que el usuario selecciona un radiobutton del grupo, SAP ejecuta <code>AT SELECTION-SCREEN</code> (con <code>sy-ucomm = 'CLICK'</code>) y luego <code>AT SELECTION-SCREEN OUTPUT</code>, lo que nos permite reevaluar la lógica de activación de campos.</p>
+</section>
+
+<!-- ══════════ 12. LOOP AT SCREEN ══════════ -->
+<section class="section" id="screen-dynamic">
+  <div class="section-header">
+    <div class="section-icon icon-blue">🔄</div>
+    <div class="section-title-area">
+      <h2>LOOP AT SCREEN — Modificar la pantalla dinámicamente</h2>
+      <div class="subtitle">Activar, desactivar u ocultar campos según el contexto</div>
+    </div>
+  </div>
+
+  <p>En ABAP, la pantalla de selección se describe internamente mediante una tabla llamada <code>SCREEN</code>. Cada fila de esta tabla representa un elemento de la pantalla (un campo, un texto, un botón) y tiene atributos como:</p>
+  <ul>
+    <li><code>screen-input</code>: 1 si el campo es modificable, 0 si es de solo lectura.</li>
+    <li><code>screen-invisible</code>: 1 si el campo está oculto.</li>
+    <li><code>screen-group1</code>: un grupo de modificación que asignamos al declarar el campo (con <code>MODIF ID</code>).</li>
+  </ul>
+
+  <p>En el evento <code>AT SELECTION-SCREEN OUTPUT</code> (que se ejecuta justo antes de mostrar la pantalla), podemos recorrer esta tabla y cambiar los atributos para adaptar la pantalla a lo que el usuario ha elegido.</p>
+
+  <h3>Paso 1: Asignar grupos de modificación a los campos</h3>
+  <p>Al declarar un <code>PARAMETERS</code> o <code>SELECT-OPTIONS</code>, puedes añadir <code>MODIF ID grupo</code>. El grupo es una etiqueta de hasta 3 caracteres que luego usaremos en el LOOP.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Asignar grupos</div>
+    </div>
+    <pre><span class="kw">PARAMETERS</span>: <span class="vr">p_noper</span> <span class="kw">TYPE</span> <span class="tp">string</span> <span class="kw">MODIF ID</span> bas,
+            <span class="vr">p_falta</span> <span class="kw">TYPE</span> <span class="tp">d</span>      <span class="kw">MODIF ID</span> fec,
+            <span class="vr">p_bank</span>  <span class="kw">AS CHECKBOX</span> <span class="kw">MODIF ID</span> fin.</pre>
+  </div>
+
+  <h3>Paso 2: En AT SELECTION-SCREEN OUTPUT modificar SCREEN</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Lógica de activación</div>
+    </div>
+    <pre><span class="kw">AT SELECTION-SCREEN OUTPUT</span>.
+  <span class="kw">LOOP AT</span> <span class="sy">SCREEN</span>.                        <span class="cmt">" recorremos todos los elementos</span>
+    <span class="kw">CASE</span> <span class="sy">screen</span>-group1.                  <span class="cmt">" según el grupo...</span>
+      <span class="kw">WHEN</span> <span class="str">'BAS'</span>.
+        <span class="kw">IF</span> <span class="vr">rb_bas</span> = <span class="str">'X'</span> <span class="kw">OR</span> <span class="vr">rb_com</span> = <span class="str">'X'</span>.
+          <span class="sy">screen</span>-input = <span class="nm">1</span>.               <span class="cmt">" activado</span>
+        <span class="kw">ELSE</span>.
+          <span class="sy">screen</span>-input = <span class="nm">0</span>.               <span class="cmt">" desactivado (solo lectura)</span>
+        <span class="kw">ENDIF</span>.
+      <span class="kw">WHEN</span> <span class="str">'FEC'</span>.
+        <span class="kw">IF</span> <span class="vr">rb_fin</span> = <span class="str">'X'</span>.
+          <span class="sy">screen</span>-input = <span class="nm">0</span>.               <span class="cmt">" desactivado en modo financiero</span>
+        <span class="kw">ELSE</span>.
+          <span class="sy">screen</span>-input = <span class="nm">1</span>.
+        <span class="kw">ENDIF</span>.
+    <span class="kw">ENDCASE</span>.
+    <span class="kw">MODIFY</span> <span class="sy">SCREEN</span>.                       <span class="cmt">" ¡Obligatorio! Guarda los cambios</span>
+  <span class="kw">ENDLOOP</span>.</pre>
+  </div>
+
+  <div class="callout callout-amber">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>No olvides MODIFY SCREEN</strong>. Si no lo pones, los cambios que hiciste en la línea de SCREEN se pierden.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 13. BLOCK WITH FRAME ══════════ -->
+<section class="section" id="block">
+  <div class="section-header">
+    <div class="section-icon icon-blue">🗂️</div>
+    <div class="section-title-area">
+      <h2>BLOCK WITH FRAME TITLE — Agrupar campos visualmente</h2>
+      <div class="subtitle">Recuadros con título para organizar la pantalla</div>
+    </div>
+  </div>
+
+  <p>Cuando tienes muchos campos, puedes agruparlos dentro de un recuadro con título. Esto mejora la usabilidad.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">zejercicio_sq_panelseleccion.abap</div>
+    </div>
+    <pre><span class="kw">SELECTION-SCREEN BEGIN OF BLOCK</span> b1 <span class="kw">WITH FRAME TITLE</span> TEXT-001.
+  <span class="kw">PARAMETERS</span>: <span class="vr">p_carrid</span> <span class="kw">TYPE</span> sflight-carrid.
+  <span class="kw">SELECT-OPTIONS</span>: <span class="vr">so_conn</span> <span class="kw">FOR</span> sflight-connid.
+<span class="kw">SELECTION-SCREEN END OF BLOCK</span> b1.</pre>
+  </div>
+
+  <p><code>TEXT-001</code> es un elemento de texto. Puedes definirlo en <em>Goto → Text Elements → Text Symbols</em> del editor ABAP. Así el título puede traducirse a otros idiomas.</p>
+</section>
+
+<!-- ══════════ 14. EVENTOS DEL PROGRAMA ══════════ -->
+<section class="section" id="events">
+  <div class="section-header">
+    <div class="section-icon icon-green">⚡</div>
+    <div class="section-title-area">
+      <h2>Eventos del programa — El ciclo de vida</h2>
+      <div class="subtitle">Por qué el código no se ejecuta de arriba a abajo</div>
+    </div>
+  </div>
+
+  <p>En ABAP, el programa no se ejecuta en orden secuencial como en Python. En lugar de eso, tú escribes bloques de código asociados a <strong>eventos</strong>. SAP decide cuándo llamar a cada bloque según lo que haga el usuario.</p>
+
+  <p>Los eventos principales son:</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-tag">Evento 1</div>
+      <h4>INITIALIZATION</h4>
+      <p>Se ejecuta una sola vez, <strong>antes de que la pantalla de selección aparezca</strong>. Aquí preparas datos iniciales: cargar catálogos, asignar textos a botones, rellenar listboxes.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Evento 2</div>
+      <h4>AT SELECTION-SCREEN</h4>
+      <p>Se ejecuta <strong>cada vez que el usuario interactúa</strong> con la pantalla: pulsa un botón, presiona Enter, o hace clic en Ejecutar. Usas <code>sy-ucomm</code> para saber qué acción ocurrió.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Evento 3</div>
+      <h4>AT SELECTION-SCREEN OUTPUT</h4>
+      <p>Se ejecuta <strong>justo antes de que la pantalla se dibuje</strong> (al inicio y después de cada interacción que requiera redibujado). Aquí va la lógica para activar/desactivar campos.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Evento 4</div>
+      <h4>START-OF-SELECTION</h4>
+      <p>Se ejecuta cuando el usuario pulsa <strong>Ejecutar (F8)</strong> y la pantalla de selección ha pasado todas las validaciones. Aquí va la lógica principal del programa.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-amber">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <strong>¿Por qué no puedo poner código suelto?</strong>
+      <p>Todo el código ejecutable debe estar dentro de un evento o de una subrutina (FORM). Si pones instrucciones fuera de estos bloques, SAP te dará error.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 15. VARIABLES DEL SISTEMA sy- ══════════ -->
+<section class="section" id="sy">
+  <div class="section-header">
+    <div class="section-icon icon-purple">🔮</div>
+    <div class="section-title-area">
+      <h2>Variables del sistema sy-</h2>
+      <div class="subtitle">El salpicadero de SAP: información que SAP actualiza automáticamente</div>
+    </div>
+  </div>
+
+  <p>Las variables que empiezan por <code>sy-</code> (o <code>syst-</code>) son variables <strong>globales de solo lectura</strong> que SAP mantiene actualizadas en todo momento. No las declaras, ya existen. Contienen información sobre el estado del programa, del sistema y de la última operación.</p>
+
+  <p>Son como los indicadores del coche: no puedes cambiarlos, pero te dicen la velocidad, las revoluciones, si hay algún error, etc.</p>
+
+  <h3>Las más importantes (y las que has usado)</h3>
+
+  <table class="ref-table">
+    <thead><tr><th>Variable</th><th>Qué contiene</th><th>Cuándo se actualiza</th><th>Ejemplo de uso</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>sy-subrc</td>
+        <td>Código de retorno de la última operación.</td>
+        <td>Después de cada instrucción que puede fallar (READ TABLE, SELECT, CALL FUNCTION).</td>
+        <td><pre style="margin:0;">READ TABLE lt_cat INTO ls_cat WITH KEY id = p_id.<br>IF sy-subrc = 0.<br>  " encontrado<br>ENDIF.</pre></td>
+      </tr>
+      <tr>
+        <td>sy-ucomm</td>
+        <td>El USER-COMMAND de la última acción del usuario.</td>
+        <td>En AT SELECTION-SCREEN, después de que el usuario pulse un botón o Enter.</td>
+        <td><pre style="margin:0;">CASE sy-ucomm.<br>  WHEN 'ADD'.<br>    " añadir<br>ENDCASE.</pre></td>
+      </tr>
+      <tr>
+        <td>sy-index</td>
+        <td>Número de iteración actual en un bucle DO o LOOP (empieza en 1).</td>
+        <td>En cada vuelta de un DO o LOOP.</td>
+        <td><pre style="margin:0;">DO 10 TIMES.<br>  WRITE: / sy-index.<br>ENDDO.</pre></td>
+      </tr>
+      <tr>
+        <td>sy-tabix</td>
+        <td>Índice de la fila actual en un LOOP AT (empieza en 1).</td>
+        <td>En cada vuelta de LOOP AT.</td>
+        <td><pre style="margin:0;">LOOP AT lt_tab INTO ls_fila.<br>  WRITE: / sy-tabix, ls_fila.<br>ENDLOOP.</pre></td>
+      </tr>
+      <tr>
+        <td>sy-uname</td>
+        <td>Nombre de usuario SAP que está ejecutando el programa.</td>
+        <td>Siempre disponible.</td>
+        <td><pre style="margin:0;">ls_log-usuario = sy-uname.</pre></td>
+      </tr>
+      <tr>
+        <td>sy-datum</td>
+        <td>Fecha actual del sistema en formato AAAAMMDD.</td>
+        <td>Siempre disponible.</td>
+        <td><pre style="margin:0;">IF ls_fecha < sy-datum.<br>  " fecha pasada<br>ENDIF.</pre></td>
+      </tr>
+      <tr>
+        <td>sy-uzeit</td>
+        <td>Hora actual en formato HHMMSS.</td>
+        <td>Siempre disponible.</td>
+        <td><pre style="margin:0;">ls_log-hora = sy-uzeit.</pre></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-red">
+    <div class="callout-icon">🚨</div>
+    <div class="callout-body">
+      <strong>Nunca asignes valores a sy-</strong> (salvo rarísimas excepciones). Son de solo lectura. Si lo haces, puedes desestabilizar el programa.
+    </div>
+  </div>
+
+  <h3>sy-subrc en detalle</h3>
+  <p>Es la variable más usada. Después de cada operación que puede fallar, SAP pone un número en <code>sy-subrc</code>. Los valores típicos son:</p>
+  <ul>
+    <li><strong>0</strong>: éxito, encontró algo, la operación fue bien.</li>
+    <li><strong>4</strong>: no encontró nada, fin de datos, etc.</li>
+    <li><strong>8</strong>, <strong>12</strong>, etc.: otros errores específicos de cada función.</li>
+  </ul>
+  <p>La regla de oro: <strong>comprueba sy-subrc inmediatamente después de la operación</strong>. Si haces otra cosa entre medias, su valor puede cambiar.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Uso correcto de sy-subrc</div>
+    </div>
+    <pre><span class="kw">READ TABLE</span> lt_catalogo <span class="kw">INTO</span> ls_cat <span class="kw">WITH KEY</span> id = p_lista.
+<span class="kw">IF</span> <span class="sy">sy-subrc</span> = <span class="nm">0</span>.
+  <span class="cmt">" Encontrado, podemos usar ls_cat</span>
+<span class="kw">ELSE</span>.
+  <span class="cmt">" No encontrado, mostrar mensaje de error</span>
+<span class="kw">ENDIF</span>.</pre>
+  </div>
+</section>
+
+<!-- ══════════ 16. IF / ELSEIF / ELSE ══════════ -->
+<section class="section" id="if">
+  <div class="section-header">
+    <div class="section-icon icon-sky">🔀</div>
+    <div class="section-title-area">
+      <h2>IF / ELSEIF / ELSE — Tomar decisiones</h2>
+      <div class="subtitle">Ejecutar código solo si se cumple una condición</div>
+    </div>
+  </div>
+
+  <p>El <code>IF</code> funciona igual que en cualquier lenguaje. La diferencia está en algunos operadores específicos de ABAP.</p>
+
+  <h3>Operadores de comparación</h3>
+  <ul>
+    <li><code>=</code> o <code>EQ</code>: igual que</li>
+    <li><code><></code> o <code>NE</code>: distinto de</li>
+    <li><code>></code> o <code>GT</code>: mayor que</li>
+    <li><code><</code> o <code>LT</code>: menor que</li>
+    <li><code>>=</code> o <code>GE</code>: mayor o igual</li>
+    <li><code><=</code> o <code>LE</code>: menor o igual</li>
+  </ul>
+
+  <h3>Comprobaciones especiales</h3>
+  <ul>
+    <li><code>IS INITIAL</code>: ¿la variable tiene su valor por defecto? (texto vacío, número 0, tabla sin filas, objeto sin crear).</li>
+    <li><code>IS NOT INITIAL</code>: lo contrario.</li>
+  </ul>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Ejemplos</div>
+    </div>
+    <pre><span class="kw">IF</span> <span class="vr">p_lista</span> <span class="kw">IS INITIAL</span>.
+  <span class="kw">MESSAGE</span> <span class="str">'Debe seleccionar un producto'</span> <span class="kw">TYPE</span> <span class="str">'E'</span>.
+<span class="kw">ENDIF</span>.
+
+<span class="kw">IF</span> <span class="vr">lt_tabla</span> <span class="kw">IS NOT INITIAL</span>.
+  <span class="kw">WRITE</span>: / <span class="str">'La tabla tiene'</span>, <span class="kw">LINES</span>( <span class="vr">lt_tabla</span> ), <span class="str">'filas'</span>.
+<span class="kw">ENDIF</span>.
+
+<span class="kw">IF</span> <span class="vr">nota</span> >= <span class="nm">5</span> <span class="kw">AND</span> <span class="vr">nota</span> <= <span class="nm">10</span>.
+  <span class="kw">WRITE</span>: <span class="str">'Aprobado'</span>.
+<span class="kw">ELSEIF</span> <span class="vr">nota</span> < <span class="nm">5</span>.
+  <span class="kw">WRITE</span>: <span class="str">'Suspenso'</span>.
+<span class="kw">ELSE</span>.
+  <span class="kw">WRITE</span>: <span class="str">'Nota inválida'</span>.
+<span class="kw">ENDIF</span>.</pre>
+  </div>
+
+  <div class="callout callout-amber">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <strong>IS INITIAL vs = ''</strong>: <code>IS INITIAL</code> funciona para cualquier tipo de datos. <code>= ''</code> solo para cadenas. Mejor usar <code>IS INITIAL</code> siempre.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 17. CASE ══════════ -->
+<section class="section" id="case">
+  <div class="section-header">
+    <div class="section-icon icon-sky">🃏</div>
+    <div class="section-title-area">
+      <h2>CASE / WHEN — Múltiples caminos</h2>
+      <div class="subtitle">Alternativa a muchos ELSEIF sobre la misma variable</div>
+    </div>
+  </div>
+
+  <p>Cuando tienes que comparar una misma variable con muchos valores, <code>CASE</code> es más limpio que una cadena de <code>ELSEIF</code>.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">CASE típico con sy-ucomm</div>
+    </div>
+    <pre><span class="kw">CASE</span> <span class="sy">sy-ucomm</span>.
+  <span class="kw">WHEN</span> <span class="str">'ADD'</span>.
+    <span class="kw">PERFORM</span> add_product.
+  <span class="kw">WHEN</span> <span class="str">'FIN'</span>.
+    <span class="kw">PERFORM</span> finish_order.
+  <span class="kw">WHEN</span> <span class="str">'DEL'</span> <span class="kw">OR</span> <span class="str">'REMOVE'</span>.
+    <span class="kw">PERFORM</span> delete_item.
+  <span class="kw">WHEN OTHERS</span>.
+    <span class="cmt">" No hacer nada o mensaje</span>
+<span class="kw">ENDCASE</span>.</pre>
+  </div>
+</section>
+
+<!-- ══════════ 18. LOOP AT ══════════ -->
+<section class="section" id="loop">
+  <div class="section-header">
+    <div class="section-icon icon-sky">🔁</div>
+    <div class="section-title-area">
+      <h2>LOOP AT — Recorrer tablas internas</h2>
+      <div class="subtitle">La forma de procesar cada fila de una lista</div>
+    </div>
+  </div>
+
+  <p>Hay dos formas principales de recorrer una tabla interna: <code>INTO</code> (copia) y <code>ASSIGNING</code> (puntero).</p>
+
+  <h3>LOOP AT … INTO (copia)</h3>
+  <p>En cada iteración, SAP copia la fila actual a una variable estructura. Si modificas esa variable, la tabla original no cambia. Para actualizar la tabla, necesitas un <code>MODIFY</code> explícito.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">LOOP INTO</div>
+    </div>
+    <pre><span class="kw">LOOP AT</span> lt_productos <span class="kw">INTO</span> ls_producto.
+  <span class="kw">WRITE</span>: / ls_producto-nombre.
+  <span class="vr">ls_producto</span>-precio = <span class="vr">ls_producto</span>-precio * <span class="nm">1.1</span>.  <span class="cmt">" Esto NO cambia lt_productos</span>
+<span class="kw">ENDLOOP</span>.</pre>
+  </div>
+
+  <h3>LOOP AT … ASSIGNING (puntero)</h3>
+  <p>Usamos un field symbol. En cada iteración, el field symbol apunta directamente a la fila en memoria. Cualquier cambio en el field symbol modifica la tabla original.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">LOOP ASSIGNING</div>
+    </div>
+    <pre><span class="kw">FIELD-SYMBOLS</span>: &lt;<span class="fn">fs_prod</span>&gt; <span class="kw">TYPE</span> ty_producto.
+
+<span class="kw">LOOP AT</span> lt_productos <span class="kw">ASSIGNING</span> &lt;<span class="fn">fs_prod</span>&gt;.
+  &lt;<span class="fn">fs_prod</span>&gt;-precio = &lt;<span class="fn">fs_prod</span>&gt;-precio * <span class="nm">1.1</span>.  <span class="cmt">" Esto SÍ modifica lt_productos</span>
+<span class="kw">ENDLOOP</span>.</pre>
+  </div>
+
+  <div class="callout callout-green">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <strong>Cuándo usar cada uno:</strong> Usa <code>INTO</code> si solo necesitas leer los datos. Usa <code>ASSIGNING</code> si vas a modificar la tabla.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 19. DO n TIMES ══════════ -->
+<section class="section" id="do">
+  <div class="section-header">
+    <div class="section-icon icon-sky">🔢</div>
+    <div class="section-title-area">
+      <h2>DO n TIMES — Repetir un número fijo de veces</h2>
+      <div class="subtitle">Bucle sin tabla, solo contador</div>
+    </div>
+  </div>
+
+  <p><code>DO n TIMES</code> ejecuta el bloque exactamente n veces. En cada vuelta, la variable del sistema <code>sy-index</code> contiene el número de iteración (empezando en 1).</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">zejercicio_sq_15_dia4.abap</div>
+    </div>
+    <pre><span class="kw">DO</span> <span class="nm">10</span> <span class="kw">TIMES</span>.
+  <span class="vr">ls_numero</span>-numero = <span class="sy">sy-index</span>.
+  <span class="kw">APPEND</span> <span class="vr">ls_numero</span> <span class="kw">TO</span> <span class="vr">lt_numeros</span>.
+<span class="kw">ENDDO</span>.</pre>
+  </div>
+</section>
+
+<!-- ══════════ 20. TABLAS INTERNAS ══════════ -->
+<section class="section" id="tables">
+  <div class="section-header">
+    <div class="section-icon icon-green">🗄️</div>
+    <div class="section-title-area">
+      <h2>Tablas internas — Listas en memoria</h2>
+      <div class="subtitle">El corazón de cualquier programa ABAP</div>
+    </div>
+  </div>
+
+  <p>Una tabla interna es simplemente una lista de filas que viven en la memoria del servidor mientras el programa se ejecuta. No se guardan en base de datos. Puedes añadir filas, quitarlas, ordenarlas, buscarlas...</p>
+
+  <h3>Patrón de 3 pasos</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Definir el tipo de la fila (TYPES)</strong>
+        <p>Crear un molde con TYPES BEGIN OF.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Declarar la tabla y una estructura de trabajo (DATA)</strong>
+        <p>DATA: lt_tabla TYPE TABLE OF ty_fila, ls_fila TYPE ty_fila.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Operar con la tabla</strong>
+        <p>APPEND, READ, LOOP, DELETE, CLEAR, etc.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Ejemplo completo</div>
+    </div>
+    <pre><span class="kw">TYPES</span>: <span class="kw">BEGIN OF</span> ty_empleado,
+         id     <span class="kw">TYPE</span> i,
+         nombre <span class="kw">TYPE</span> string,
+       <span class="kw">END OF</span> ty_empleado.
+
+<span class="kw">DATA</span>: lt_empleados <span class="kw">TYPE TABLE OF</span> ty_empleado,
+      ls_empleado  <span class="kw">TYPE</span> ty_empleado.
+
+<span class="vr">ls_empleado</span>-id = <span class="nm">1</span>. <span class="vr">ls_empleado</span>-nombre = <span class="str">'Ana'</span>.
+<span class="kw">APPEND</span> <span class="vr">ls_empleado</span> <span class="kw">TO</span> lt_empleados.
+
+<span class="kw">CLEAR</span> ls_empleado.   <span class="cmt">" Limpiamos para la siguiente fila</span>
+<span class="vr">ls_empleado</span>-id = <span class="nm">2</span>. <span class="vr">ls_empleado</span>-nombre = <span class="str">'Luis'</span>.
+<span class="kw">APPEND</span> <span class="vr">ls_empleado</span> <span class="kw">TO</span> lt_empleados.
+
+<span class="kw">LOOP AT</span> lt_empleados <span class="kw">INTO</span> ls_empleado.
+  <span class="kw">WRITE</span>: / ls_empleado-id, ls_empleado-nombre.
+<span class="kw">ENDLOOP</span>.</pre>
+  </div>
+</section>
+
+<!-- ══════════ 21. APPEND, READ, CLEAR ══════════ -->
+<section class="section" id="append">
+  <div class="section-header">
+    <div class="section-icon icon-green">🛠️</div>
+    <div class="section-title-area">
+      <h2>Operaciones básicas con tablas</h2>
+      <div class="subtitle">APPEND, READ, CLEAR, DELETE, SORT</div>
+    </div>
+  </div>
+
+  <table class="ref-table">
+    <thead><tr><th>Instrucción</th><th>Qué hace</th><th>Ejemplo</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>APPEND</td>
+        <td>Añade una fila al final de la tabla.</td>
+        <td><code>APPEND ls_fila TO lt_tabla.</code></td>
+      </tr>
+      <tr>
+        <td>READ TABLE</td>
+        <td>Busca una fila (primera coincidencia) y la copia a una estructura. Actualiza sy-subrc.</td>
+        <td><code>READ TABLE lt_tabla INTO ls_fila WITH KEY id = 1.</code></td>
+      </tr>
+      <tr>
+        <td>CLEAR (estructura)</td>
+        <td>Pone todos los campos de la estructura a su valor inicial.</td>
+        <td><code>CLEAR ls_fila.</code></td>
+      </tr>
+      <tr>
+        <td>CLEAR (tabla)</td>
+        <td>Elimina todas las filas de la tabla.</td>
+        <td><code>CLEAR lt_tabla.</code></td>
+      </tr>
+      <tr>
+        <td>DELETE</td>
+        <td>Elimina filas que cumplan una condición.</td>
+        <td><code>DELETE lt_tabla WHERE nota < 5.</code></td>
+      </tr>
+      <tr>
+        <td>SORT</td>
+        <td>Ordena la tabla por uno o varios campos.</td>
+        <td><code>SORT lt_tabla BY nombre ASCENDING.</code></td>
+      </tr>
+      <tr>
+        <td>DESCRIBE TABLE … LINES</td>
+        <td>Cuenta el número de filas.</td>
+        <td><code>DESCRIBE TABLE lt_tabla LINES lv_total.</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════ 22. FIELD SYMBOLS ══════════ -->
+<section class="section" id="fieldsymbols">
+  <div class="section-header">
+    <div class="section-icon icon-purple">👉</div>
+    <div class="section-title-area">
+      <h2>Field Symbols — Punteros a datos</h2>
+      <div class="subtitle">&lt;fs_&gt; no guarda datos, apunta a ellos</div>
+    </div>
+  </div>
+
+  <p>Un field symbol es como un puntero en C o una referencia en Java. No contiene datos, sino que <strong>apunta</strong> a una zona de memoria donde están los datos. Se declara con <code>FIELD-SYMBOLS</code> y se usa con <code>&lt; &gt;</code>.</p>
+
+  <p>La principal ventaja es que cuando asignas un field symbol a una fila de una tabla (con <code>ASSIGNING</code>), cualquier cambio que hagas a través del field symbol modifica directamente la tabla, sin necesidad de hacer un <code>MODIFY</code>.</p>
+
+  <div class="pointer-viz">
+    <div class="pv-box">
+      <div class="pv-label">lt_tabla[1]</div>
+      <div class="pv-val">nombre='Ana', nota=8</div>
+    </div>
+    <div class="pv-arrow">←</div>
+    <div class="pv-box pv-ptr">
+      <div class="pv-label">&lt;fs_fila&gt;</div>
+      <div class="pv-val">apunta aquí</div>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Uso de field symbol</div>
+    </div>
+    <pre><span class="kw">FIELD-SYMBOLS</span>: &lt;<span class="fn">fs_tarea</span>&gt; <span class="kw">TYPE</span> ty_tarea.
+
+<span class="kw">LOOP AT</span> lt_tareas <span class="kw">ASSIGNING</span> &lt;<span class="fn">fs_tarea</span>&gt;.
+  <span class="kw">IF</span> &lt;<span class="fn">fs_tarea</span>&gt;-nota < <span class="nm">5</span>.
+    &lt;<span class="fn">fs_tarea</span>&gt;-estado = <span class="str">'SUSP'</span>.   <span class="cmt">" Modifica lt_tareas directamente</span>
+  <span class="kw">ENDIF</span>.
+<span class="kw">ENDLOOP</span>.</pre>
+  </div>
+
+  <div class="callout callout-purple">
+    <div class="callout-icon">🧠</div>
+    <div class="callout-body">
+      <strong>Los ángulos &lt; &gt; son obligatorios</strong> y forman parte del nombre. No es un adorno.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 23. GROUP BY ══════════ -->
+<section class="section" id="groupby">
+  <div class="section-header">
+    <div class="section-icon icon-sky">📊</div>
+    <div class="section-title-area">
+      <h2>GROUP BY en LOOP — Agrupar filas</h2>
+      <div class="subtitle">Como el GROUP BY de SQL pero en memoria</div>
+    </div>
+  </div>
+
+  <p>Desde ABAP 7.40, puedes agrupar filas de una tabla interna directamente en un <code>LOOP</code> con la adición <code>GROUP BY</code>. SAP agrupa las filas según el valor de uno o varios campos y te permite procesar cada grupo.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">zejercicio_13_sq_tabla.abap</div>
+    </div>
+    <pre><span class="kw">LOOP AT</span> gt_empleados <span class="kw">INTO</span> gs_empleado
+     <span class="kw">GROUP BY</span> gs_empleado-depto
+     <span class="kw">ASSIGNING FIELD-SYMBOL</span>(&lt;grupo&gt;).
+
+  <span class="kw">WRITE</span>: / <span class="str">'Departamento:'</span>, &lt;grupo&gt;.
+
+  <span class="kw">LOOP AT GROUP</span> &lt;grupo&gt; <span class="kw">ASSIGNING FIELD-SYMBOL</span>(&lt;miembro&gt;).
+    <span class="kw">WRITE</span>: / &lt;miembro&gt;-nombre.
+  <span class="kw">ENDLOOP</span>.
+<span class="kw">ENDLOOP</span>.</pre>
+  </div>
+
+  <p>Aquí <code>&lt;grupo&gt;</code> contiene el valor del campo por el que agrupas (ej. 'IT', 'HR'). <code>&lt;miembro&gt;</code> es cada fila dentro de ese grupo.</p>
+</section>
+
+<!-- ══════════ 24. MESSAGE ══════════ -->
+<section class="section" id="messages">
+  <div class="section-header">
+    <div class="section-icon icon-amber">💬</div>
+    <div class="section-title-area">
+      <h2>MESSAGE — Comunicarse con el usuario</h2>
+      <div class="subtitle">Los diferentes tipos de mensajes y su comportamiento</div>
+    </div>
+  </div>
+
+  <p><code>MESSAGE</code> muestra un texto al usuario. El tipo del mensaje (<code>TYPE</code>) determina cómo se muestra y si el programa continúa o se detiene.</p>
+
+  <div class="msg-demo msg-s">TYPE 'S' (Success): aparece en la barra de estado (verde). El programa continúa.</div>
+  <div class="msg-demo msg-e">TYPE 'E' (Error): aparece en rojo. El programa se detiene y el usuario debe corregir algo en la pantalla de selección.</div>
+  <div class="msg-demo msg-w">TYPE 'W' (Warning): aparece en amarillo. El programa continúa.</div>
+  <div class="msg-demo msg-i">TYPE 'I' (Information): abre una ventana popup. El programa se pausa hasta que el usuario cierra la ventana.</div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Ejemplos</div>
+    </div>
+    <pre><span class="kw">MESSAGE</span> <span class="str">'Producto añadido'</span> <span class="kw">TYPE</span> <span class="str">'S'</span>.
+<span class="kw">MESSAGE</span> <span class="str">'Error: seleccione un valor'</span> <span class="kw">TYPE</span> <span class="str">'E'</span>.
+<span class="kw">MESSAGE</span> <span class="str">'¿Está seguro?'</span> <span class="kw">TYPE</span> <span class="str">'W'</span>.
+<span class="kw">MESSAGE</span> <span class="str">'Proceso terminado'</span> <span class="kw">TYPE</span> <span class="str">'I'</span>.</pre>
+  </div>
+
+  <div class="callout callout-amber">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <strong>DISPLAY LIKE</strong>: puedes hacer que un mensaje tipo 'S' se vea rojo (como error) pero sin bloquear: <code>MESSAGE 'Aviso' TYPE 'S' DISPLAY LIKE 'E'.</code>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 25. CALL FUNCTION ══════════ -->
+<section class="section" id="functions">
+  <div class="section-header">
+    <div class="section-icon icon-sky">⚙️</div>
+    <div class="section-title-area">
+      <h2>CALL FUNCTION — Llamar a módulos de función</h2>
+      <div class="subtitle">Usar funciones predefinidas de SAP</div>
+    </div>
+  </div>
+
+  <p>Los <strong>módulos de función</strong> son como procedimientos almacenados en el servidor SAP. Hay miles ya creados. Para usarlos, escribes <code>CALL FUNCTION 'NOMBRE'</code> y le pasas los parámetros que necesite.</p>
+
+  <p>Los parámetros se agrupan en:</p>
+  <ul>
+    <li><code>EXPORTING</code>: datos que envías a la función.</li>
+    <li><code>IMPORTING</code>: datos que la función te devuelve.</li>
+    <li><code>TABLES</code>: tablas internas que pasas.</li>
+    <li><code>EXCEPTIONS</code>: posibles errores.</li>
+  </ul>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">VRM_SET_VALUES</div>
+    </div>
+    <pre><span class="kw">CALL FUNCTION</span> <span class="str">'VRM_SET_VALUES'</span>
+  <span class="kw">EXPORTING</span>
+    id     = <span class="str">'P_LISTA'</span>
+    values = lt_valores.</pre>
+  </div>
+</section>
+
+<!-- ══════════ 26. PERFORM / FORM ══════════ -->
+<section class="section" id="perform">
+  <div class="section-header">
+    <div class="section-icon icon-green">📦</div>
+    <div class="section-title-area">
+      <h2>PERFORM / FORM — Subrutinas propias</h2>
+      <div class="subtitle">Dividir el código en trozos reutilizables</div>
+    </div>
+  </div>
+
+  <p>Para no tener todo el código en un solo bloque, puedes crear subrutinas con <code>FORM</code> y llamarlas con <code>PERFORM</code>. Las subrutinas van al final del programa.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Ejemplo</div>
+    </div>
+    <pre><span class="kw">START-OF-SELECTION</span>.
+  <span class="kw">PERFORM</span> calcular_promedio <span class="kw">USING</span> lt_notas <span class="kw">CHANGING</span> lv_promedio.
+
+<span class="kw">FORM</span> calcular_promedio <span class="kw">USING</span> lt_datos <span class="kw">TYPE</span> tt_notas
+                       <span class="kw">CHANGING</span> cv_prom <span class="kw">TYPE</span> p.
+  ...
+<span class="kw">ENDFORM</span>.</pre>
+  </div>
+
+  <p><code>USING</code> son parámetros de entrada (solo lectura). <code>CHANGING</code> son parámetros que pueden modificarse y devolver el cambio al programa principal.</p>
+</section>
+
+<!-- ══════════ 27. STRINGS Y MATES ══════════ -->
+<section class="section" id="strings">
+  <div class="section-header">
+    <div class="section-icon icon-green">🔤</div>
+    <div class="section-title-area">
+      <h2>Strings y operaciones matemáticas</h2>
+      <div class="subtitle">to_upper, concatenar, MOD, DIV, **</div>
+    </div>
+  </div>
+
+  <h3>Funciones de texto</h3>
+  <ul>
+    <li><code>to_upper( texto )</code> convierte a mayúsculas.</li>
+    <li><code>to_lower( texto )</code> convierte a minúsculas.</li>
+    <li><code>strlen( texto )</code> devuelve la longitud.</li>
+    <li><code>CONCATENATE a b INTO c SEPARATED BY space</code> une textos.</li>
+  </ul>
+
+  <h3>Operadores matemáticos especiales</h3>
+  <ul>
+    <li><code>MOD</code>: resto de la división (ej. <code>7 MOD 2 = 1</code>).</li>
+    <li><code>DIV</code>: división entera (ej. <code>7 DIV 2 = 3</code>).</li>
+    <li><code>**</code>: potencia (ej. <code>2 ** 3 = 8</code>).</li>
+  </ul>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Ejemplos</div>
+    </div>
+    <pre>&lt;fs_nombre&gt;-nombre = to_upper( &lt;fs_nombre&gt;-nombre ).
+
+<span class="kw">IF</span> numero <span class="kw">MOD</span> <span class="nm">2</span> = <span class="nm">0</span>.
+  <span class="kw">WRITE</span>: <span class="str">'Par'</span>.
+<span class="kw">ENDIF</span>.
+
+resultado = base ** exponente.</pre>
+  </div>
+</section>
+
+<!-- ══════════ 28. WRITE ══════════ -->
+<section class="section" id="write">
+  <div class="section-header">
+    <div class="section-icon icon-sky">📝</div>
+    <div class="section-title-area">
+      <h2>WRITE — Mostrar datos en pantalla</h2>
+      <div class="subtitle">La salida básica de ABAP</div>
+    </div>
+  </div>
+
+  <p><code>WRITE</code> es la instrucción más sencilla para sacar datos por pantalla. Se usa en programas simples y para depurar.</p>
+
+  <ul>
+    <li><code>WRITE texto.</code> escribe en la línea actual.</li>
+    <li><code>WRITE: / texto.</code> salta a una nueva línea antes de escribir.</li>
+    <li><code>WRITE: / 'Nombre:', ls_persona-nombre.</code> varios elementos separados por comas.</li>
+  </ul>
+
+  <p>Para programas serios con tablas de datos, se usa ALV en lugar de WRITE.</p>
+</section>
+
+<!-- ══════════ 29. ALV CLÁSICO ══════════ -->
+<section class="section" id="alv-classic">
+  <div class="section-header">
+    <div class="section-icon icon-amber">📊</div>
+    <div class="section-title-area">
+      <h2>ALV Clásico (REUSE_ALV_GRID_DISPLAY)</h2>
+      <div class="subtitle">Mostrar tablas con todas las funcionalidades</div>
+    </div>
+  </div>
+
+  <p>ALV (ABAP List Viewer) es el componente estándar para mostrar tablas de forma profesional, con ordenación, filtros, exportación a Excel, etc.</p>
+
+  <p>La versión clásica usa el módulo de función <code>REUSE_ALV_GRID_DISPLAY</code>. Necesitas preparar:</p>
+  <ul>
+    <li><strong>Field catalog</strong> (<code>it_fieldcat</code>): describe cada columna (campo, título, alineación).</li>
+    <li><strong>Layout</strong> (<code>is_layout</code>): configuración visual (zebra, optimización de ancho).</li>
+    <li><strong>Tabla de datos</strong> (<code>t_outtab</code>): la tabla interna con los datos.</li>
+  </ul>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Ejemplo básico</div>
+    </div>
+    <pre><span class="kw">DATA</span>: lt_fieldcat <span class="kw">TYPE</span> slis_t_fieldcat_alv,
+      ls_fieldcat <span class="kw">TYPE</span> slis_fieldcat_alv,
+      ls_layout   <span class="kw">TYPE</span> slis_layout_alv.
+
+<span class="cmt">" Definir columna ALUMNO</span>
+ls_fieldcat-fieldname = <span class="str">'ALUMNO'</span>.
+ls_fieldcat-seltext_l = <span class="str">'Nombre del Alumno'</span>.
+<span class="kw">APPEND</span> ls_fieldcat <span class="kw">TO</span> lt_fieldcat.
+
+<span class="cmt">" Layout</span>
+ls_layout-zebra = <span class="str">'X'</span>.
+ls_layout-colwidth_optimize = <span class="str">'X'</span>.
+
+<span class="kw">CALL FUNCTION</span> <span class="str">'REUSE_ALV_GRID_DISPLAY'</span>
+  <span class="kw">EXPORTING</span>
+    is_layout   = ls_layout
+    it_fieldcat = lt_fieldcat
+  <span class="kw">TABLES</span>
+    t_outtab    = lt_tareas.</pre>
+  </div>
+</section>
+
+<!-- ══════════ 30. ALV ORIENTADO A OBJETOS ══════════ -->
+<section class="section" id="alv-oo">
+  <div class="section-header">
+    <div class="section-icon icon-purple">🧬</div>
+    <div class="section-title-area">
+      <h2>ALV OO (cl_salv_table)</h2>
+      <div class="subtitle">La forma moderna, más fácil y potente</div>
+    </div>
+  </div>
+
+  <p>En lugar de un módulo de función, usas la clase <code>cl_salv_table</code>. Con ella, no necesitas construir el fieldcat manualmente (SAP lo genera automáticamente).</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Ejemplo mínimo</div>
+    </div>
+    <pre><span class="kw">DATA</span>: gr_alv     <span class="kw">TYPE REF TO</span> cl_salv_table,
+      gr_func    <span class="kw">TYPE REF TO</span> cl_salv_functions,
+      gr_columns <span class="kw">TYPE REF TO</span> cl_salv_columns_table,
+      gr_column  <span class="kw">TYPE REF TO</span> cl_salv_column_table.
+
+<span class="kw">TRY</span>.
+    cl_salv_table=>factory(
+      <span class="kw">IMPORTING</span> r_salv_table = gr_alv
+      <span class="kw">CHANGING</span>  t_table      = lt_datos ).
+
+    gr_func = gr_alv->get_functions( ).
+    gr_func->set_all( abap_true ).   <span class="cmt">" Activa todos los botones</span>
+
+    gr_columns = gr_alv->get_columns( ).
+    gr_columns->set_optimize( abap_true ).
+
+    gr_alv->display( ).
+
+  <span class="kw">CATCH</span> cx_salv_msg.
+    <span class="kw">MESSAGE</span> <span class="str">'Error'</span> <span class="kw">TYPE</span> <span class="str">'E'</span>.
+<span class="kw">ENDTRY</span>.</pre>
+  </div>
+</section>
+
+<!-- ══════════ 31. MÁSCARAS (set_edit_mask) ══════════ -->
+<section class="section" id="alv-masks">
+  <div class="section-header">
+    <div class="section-icon icon-purple">🎭</div>
+    <div class="section-title-area">
+      <h2>Máscaras de salida (set_edit_mask)</h2>
+      <div class="subtitle">Formatear teléfonos, DNIs, fechas</div>
+    </div>
+  </div>
+
+  <p>Puedes aplicar una máscara a una columna para que se muestre con un formato concreto (ej. teléfono: 123-456-789). La máscara usa <code>_</code> como comodín para un carácter.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">zejercicio_11_sq_dia6.abap</div>
+    </div>
+    <pre>gr_column ?= gr_columns->get_column( 'TELEFONO' ).
+gr_column->set_edit_mask( '___-___-___' ).</pre>
+  </div>
+</section>
+
+<!-- ══════════ 32. MONEDA (set_currency) ══════════ -->
+<section class="section" id="alv-currency">
+  <div class="section-header">
+    <div class="section-icon icon-green">💰</div>
+    <div class="section-title-area">
+      <h2>Formato de moneda (set_currency)</h2>
+      <div class="subtitle">Mostrar importes con símbolo de euro</div>
+    </div>
+  </div>
+
+  <p><code>set_currency( 'EUR' )</code> aplica el formato de moneda a una columna numérica.</p>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">zejercicio_15_sq_dia6.abap</div>
+    </div>
+    <pre>gr_column ?= gr_columns->get_column( 'SALARIO' ).
+gr_column->set_currency( 'EUR' ).</pre>
+  </div>
+</section>
+
+<!-- ══════════ 33. OCULTAR CEROS (set_zero) ══════════ -->
+<section class="section" id="alv-zero">
+  <div class="section-header">
+    <div class="section-icon icon-red">0️⃣</div>
+    <div class="section-title-area">
+      <h2>Ocultar ceros (set_zero)</h2>
+      <div class="subtitle">Que los valores cero aparezcan como vacío</div>
+    </div>
+  </div>
+
+  <p>Con <code>set_zero( abap_false )</code> indicamos que no se muestre el valor cero, dejando la celda en blanco.</p>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">zejercicio_15_sq_dia6.abap</div>
+    </div>
+    <pre>gr_column->set_zero( abap_false ).</pre>
+  </div>
+</section>
+
+<!-- ══════════ 34. VISIBILIDAD DINÁMICA (set_visible) ══════════ -->
+<section class="section" id="alv-visibility">
+  <div class="section-header">
+    <div class="section-icon icon-blue">👁️</div>
+    <div class="section-title-area">
+      <h2>Visibilidad dinámica de columnas</h2>
+      <div class="subtitle">Mostrar u ocultar columnas según parámetros</div>
+    </div>
+  </div>
+
+  <p>Puedes ocultar o mostrar columnas con <code>set_visible( abap_true )</code> o <code>abap_false</code>. Muy útil para personalizar la vista.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">zejercicio_15_sq_dia6.abap</div>
+    </div>
+    <pre><span class="kw">IF</span> p_bon = <span class="str">'X'</span>.
+  gr_column->set_visible( abap_true ).
+<span class="kw">ELSE</span>.
+  gr_column->set_visible( abap_false ).
+<span class="kw">ENDIF</span>.</pre>
+  </div>
+</section>
+
+<!-- ══════════ 35. DOCKING CONTAINER ══════════ -->
+<section class="section" id="docking">
+  <div class="section-header">
+    <div class="section-icon icon-sky">🪟</div>
+    <div class="section-title-area">
+      <h2>Docking Container — ALV en la misma pantalla</h2>
+      <div class="subtitle">Mostrar el ALV dentro de la pantalla de selección</div>
+    </div>
+  </div>
+
+  <p>Con un <strong>docking container</strong> puedes incrustar el ALV en la parte inferior de la pantalla de selección, de modo que el usuario vea los resultados sin cambiar de pantalla.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">zejercicio_5_sq_botones.abap</div>
+    </div>
+    <pre><span class="kw">DATA</span>: gr_dock <span class="kw">TYPE REF TO</span> cl_gui_docking_container.
+
+<span class="kw">IF</span> gr_dock <span class="kw">IS INITIAL</span>.
+  <span class="kw">CREATE OBJECT</span> gr_dock
+    <span class="kw">EXPORTING</span>
+      side      = cl_gui_docking_container=>dock_at_bottom
+      extension = <span class="nm">100</span>.
+
+  cl_salv_table=>factory(
+    <span class="kw">EXPORTING</span> r_container = gr_dock
+    <span class="kw">IMPORTING</span> r_salv_table = gr_alv
+    <span class="kw">CHANGING</span>  t_table      = lt_productos ).
+  gr_alv->display( ).
+<span class="kw">ELSE</span>.
+  gr_alv->refresh( ).
+<span class="kw">ENDIF</span>.</pre>
+  </div>
+</section>
+
+<!-- ══════════ 36. OOP BÁSICO ══════════ -->
+<section class="section" id="oop">
+  <div class="section-header">
+    <div class="section-icon icon-purple">🏗️</div>
+    <div class="section-title-area">
+      <h2>OOP en ABAP — Clases, objetos, TRY/CATCH</h2>
+      <div class="subtitle">Conceptos básicos para usar las clases de SAP</div>
+    </div>
+  </div>
+
+  <p>La programación orientada a objetos en ABAP usa los mismos conceptos que Java o C++. Tú no creas tus propias clases todavía, pero sí usas las que SAP proporciona.</p>
+
+  <h3>Referencias a objetos</h3>
+  <p>Una variable que va a contener un objeto se declara con <code>TYPE REF TO</code>. Inicialmente está vacía (INITIAL).</p>
+
+  <h3>Creación de objetos</h3>
+  <p>Puedes crear un objeto con <code>CREATE OBJECT</code> o, como en el caso de ALV, con un método de fábrica (<code>factory</code>).</p>
+
+  <h3>Llamada a métodos</h3>
+  <ul>
+    <li><code>objeto->metodo( )</code> para métodos de instancia.</li>
+    <li><code>clase=>metodo_estatico( )</code> para métodos de clase.</li>
+  </ul>
+
+  <h3>Manejo de errores con TRY/CATCH</h3>
+  <p>Los métodos OOP lanzan <strong>excepciones</strong> cuando ocurre un error. Debes capturarlas con <code>TRY ... CATCH ... ENDTRY</code>.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
+      <div class="code-label">Ejemplo con TRY/CATCH</div>
+    </div>
+    <pre><span class="kw">TRY</span>.
+    cl_salv_table=>factory(
+      <span class="kw">IMPORTING</span> r_salv_table = gr_alv
+      <span class="kw">CHANGING</span>  t_table      = lt_datos ).
+    gr_alv->display( ).
+  <span class="kw">CATCH</span> cx_salv_msg.
+    <span class="kw">MESSAGE</span> <span class="str">'Error en ALV'</span> <span class="kw">TYPE</span> <span class="str">'E'</span>.
+<span class="kw">ENDTRY</span>.</pre>
+  </div>
+
+  <div class="sep">FIN DE LA GUÍA</div>
+
+  <div style="text-align:center; padding: 30px 0 20px; color:var(--muted);">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:13px; margin-bottom:10px; color: var(--accent);">
+      ✦ Guía basada en tus propios programas ✦
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">
+      SAP GUI 8000.1.0.1161 · 64bit
+    </div>
+    <div style="font-size:14px; color: var(--muted);">
+      Cada concepto que aparece aquí lo has escrito tú. Ahora también lo entiendes. 💪
+    </div>
+  </div>
+
+</section>
+
+  </div><!-- /content -->
+</main><!-- /main -->
+
+<script>
+  // Resaltar el enlace activo en el sidebar según el scroll
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.sidebar a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidebar a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-15% 0px -75% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
