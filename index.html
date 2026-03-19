@@ -2349,125 +2349,183 @@ gr_column->set_currency( 'EUR' ).</pre>
     </div>
   </div>
 
-  <p>El Diccionario de Datos de ABAP es donde se definen todos los objetos de datos persistentes: tablas, dominios, elementos de dato, estructuras, etc. Aquí guardamos los moldes que luego usaremos en nuestros programas.</p>
+  <p>El Diccionario de Datos de ABAP (transacción <strong>SE11</strong>) es donde se definen todos los objetos de datos persistentes: tablas, dominios, elementos de dato, estructuras, etc. Aquí guardamos los moldes que luego usaremos en nuestros programas. Es el corazón de cualquier desarrollo porque los datos viven en la base de datos y deben estar correctamente definidos.</p>
 
-  <h3>1. RUTAS DE NAVEGACIÓN (TRANSACCIONES CLAVE)</h3>
-  <ul>
-    <li><strong>[SE11]</strong> – ABAP Dictionary: El cuartel general. Aquí creamos:
-      <ul>
-        <li>Dominios (técnico: tipo, longitud)</li>
-        <li>Elementos de Datos (semántico: etiquetas, textos)</li>
-        <li>Tablas Transparentes (base de datos física)</li>
-        <li>Estructuras (solo en memoria, no persistentes)</li>
-      </ul>
-    </li>
-    <li><strong>[SE38]</strong> – ABAP Editor: Donde escribimos el código para mover los datos.</li>
-    <li><strong>[SE14]</strong> – Database Utility: Para "arreglar" tablas cuando cambian físicamente y dan error de activación.</li>
-  </ul>
-
-  <h3>2. JERARQUÍA DE CREACIÓN (EL ORDEN IMPORTA)</h3>
+  <h3 id="jerarquia">1. JERARQUÍA DE CREACIÓN (EL ORDEN IMPORTA)</h3>
   <p>Para crear un campo desde cero, el camino es de abajo hacia arriba:</p>
   <div class="steps">
     <div class="step">
       <div class="step-num">A</div>
       <div class="step-body">
         <strong>DOMINIO (Domain)</strong>
-        <p>Define el tipo técnico: data type (CHAR, DATS, INT4...), número de caracteres, y si tiene valores fijos (range).</p>
+        <p>Define el tipo técnico: data type (CHAR, DATS, INT4, CURR...), número de caracteres, decimales y si tiene valores fijos (value range). Es el nivel más bajo.</p>
       </div>
     </div>
     <div class="step">
       <div class="step-num">B</div>
       <div class="step-body">
         <strong>ELEMENTO DE DATO (Data Element)</strong>
-        <p>Asigna el dominio y añade las etiquetas (texto corto, medio, largo) que verá el usuario.</p>
+        <p>Asigna el dominio y añade las etiquetas (texto corto, medio, largo) que verá el usuario. Aquí también se pueden asignar documentación y parámetros de ayuda de búsqueda.</p>
       </div>
     </div>
     <div class="step">
       <div class="step-num">C</div>
       <div class="step-body">
         <strong>TABLA / ESTRUCTURA</strong>
-        <p>Introduces el componente (nombre técnico del campo) y su tipo (el elemento de dato anterior).</p>
+        <p>Introduces el componente (nombre técnico del campo) y su tipo (el elemento de dato anterior). Para una tabla, además hay que definir la clave y los technical settings.</p>
       </div>
     </div>
   </div>
 
-  <h3>3. CONFIGURACIÓN DE TABLAS (CAMPOS CRÍTICOS EN SE11)</h3>
-  <p>Al crear una tabla (siempre con prefijo Z o Y), hay 3 paradas obligatorias antes de activar:</p>
+  <h4>Ejemplo práctico: Crear un campo "Nota" para alumnos</h4>
+  <p>Vamos a crear un dominio <code>ZD_NOTAS</code>, un elemento de dato <code>ZD_NOTA_ALUMNO</code> y una tabla <code>ZTALUMNOS</code>.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Paso A: Dominio ZD_NOTAS en SE11</div></div>
+    <pre>Definición:
+  Data Type: NUMC      " campo numérico que admite ceros a la izquierda
+  No. of Characters: 3
+  Decimal Places: 0
+  Output Characteristics:
+    Sign: no
+    Lowercase: no
+  Value Range (pestaña): podemos fijar valores si queremos, por ejemplo 1 al 10.</pre>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Paso B: Elemento de dato ZD_NOTA_ALUMNO</div></div>
+    <pre>Elementary Type:
+  Domain: ZD_NOTAS
+Field labels (pestaña 'Field Label'):
+  Short: Nota
+  Medium: Nota Alumno
+  Long:  Nota del alumno
+  Heading: Nota</pre>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Paso C: Tabla ZTALUMNOS (transparente)</div></div>
+    <pre>Componentes (pestaña 'Fields'):
+  Mandt     -> Data Element MANDT (cliente, clave)
+  Idalumno  -> Data Element ZD_ID_ALUMNO (lo crearías similar, p.ej. NUMC 5)
+  Nombre    -> Data Element ZD_NOMBRE (CHAR 30)
+  Nota      -> Data Element ZD_NOTA_ALUMNO (el que acabamos de crear)
+
+Clave (Key): marcar Mandt e Idalumno como key.
+
+Technical Settings (botón en barra):
+  Data Class: APPL0 (datos maestros)
+  Size Category: 0
+  Buffering: Buffering not allowed
+
+Enhancement Category (menú Extras): "Can be enhanced (character-type or numeric)".</pre>
+  </div>
+
+  <h3>2. RUTAS DE NAVEGACIÓN (TRANSACCIONES CLAVE)</h3>
   <ul>
-    <li><strong>MANDT:</strong> Primer campo siempre. Tipo: <code>MANDT</code>. Marcado como Key. Es el cliente.</li>
-    <li><strong>Clave (Key):</strong> Campos que identifican el registro (ej. IDAL, IDMAT).</li>
-    <li><strong>Technical Settings (botón en la barra superior):</strong>
-      <ul>
-        <li><code>Data Class</code>: APPL0 (datos maestros, que no crecen mucho).</li>
-        <li><code>Size Category</code>: 0 (de 0 a pocos miles de registros).</li>
-        <li><code>Buffering</code>: Buffering not allowed (por defecto para aprendizaje).</li>
-      </ul>
-    </li>
-    <li><strong>Enhancement Category</strong> (menú Extras → Enhancement Category): seleccionar "Can be enhanced (character-type or numeric)".</li>
+    <li><strong>[SE11]</strong> – ABAP Dictionary: El cuartel general. Aquí creamos dominios, elementos, tablas, estructuras.</li>
+    <li><strong>[SE14]</strong> – Database Utility: Para "arreglar" tablas cuando cambian físicamente y dan error de activación. Se usa cuando tras modificar una tabla, la base de datos no se actualiza correctamente.</li>
+    <li><strong>[SE38]</strong> – ABAP Editor: Donde escribimos el código para mover los datos.</li>
+    <li><strong>[SE16N]</strong> – Visualizar y editar datos de una tabla (mantenimiento de datos).</li>
   </ul>
 
-  <h3>4. DIFERENCIAS: TABLA VS ESTRUCTURA</h3>
+  <h3 id="tabla-vs-estructura">3. DIFERENCIAS: TABLA VS ESTRUCTURA</h3>
   <table class="ref-table">
     <thead><tr><th>Atributo</th><th>Tabla (ZTALUM...)</th><th>Estructura (ZSALUM...)</th></tr></thead>
     <tbody>
       <tr><td>Persistencia</td><td>SI (se guarda en disco)</td><td>NO (solo en RAM)</td></tr>
-      <tr><td>Campo MANDT</td><td>OBLIGATORIO</td><td>PROHIBIDO (no se usa)</td></tr>
-      <tr><td>Uso principal</td><td>Guardar datos reales</td><td>Molde para el código (work area)</td></tr>
+      <tr><td>Campo MANDT</td><td>OBLIGATORIO (cliente)</td><td>PROHIBIDO (no se usa)</td></tr>
+      <tr><td>Uso principal</td><td>Guardar datos reales</td><td>Molde para el código (work area, parámetros)</td></tr>
       <tr><td>Technical Settings</td><td>REQUERIDO</td><td>NO TIENE</td></tr>
+      <tr><td>Clave primaria</td><td>Definida (key)</td><td>No existe</td></tr>
+      <tr><td>Ejemplo</td><td>ZTALUMNOS</td><td>ZSALUMNOS_STR</td></tr>
     </tbody>
   </table>
 
-  <h3>5. EL PUENTE AL CÓDIGO (SE38) – CONCEPTOS "LINEA" Y "TABLA"</h3>
-  <p>Para manipular los datos en un Reporte, definimos:</p>
+  <h3 id="codigo-dic">4. EL PUENTE AL CÓDIGO (SE38) – CONCEPTOS "WORK AREA" Y "TABLA INTERNA"</h3>
+  <p>Para manipular los datos en un Reporte, definimos dos objetos:</p>
+
   <div class="code-wrap">
     <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Work Area y Tabla Interna</div></div>
-    <pre><span class="kw">DATA</span>: <span class="vr">ls_alumno</span> <span class="kw">TYPE</span> zsalumprc26sq.  <span class="cmt">" LINEA DE TRABAJO (Work Area) – una 'ficha' única</span>
-<span class="kw">DATA</span>: <span class="vr">lt_alumnos</span> <span class="kw">TYPE TABLE OF</span> zsalumprc26sq. <span class="cmt">" TABLA INTERNA – el 'archivador' de fichas</span></pre>
+    <pre><span class="kw">DATA</span>: <span class="vr">ls_alumno</span> <span class="kw">TYPE</span> ztalumnos.     <span class="cmt">" LINEA DE TRABAJO (Work Area) – una 'ficha' única basada en la estructura de la tabla</span>
+<span class="kw">DATA</span>: <span class="vr">lt_alumnos</span> <span class="kw">TYPE TABLE OF</span> ztalumnos. <span class="cmt">" TABLA INTERNA – el 'archivador' de fichas</span></pre>
   </div>
 
-  <p><strong>FLUJO DE DATOS ESTÁNDAR:</strong></p>
+  <p>Si en lugar de la tabla quisiéramos usar una estructura (por ejemplo para pantallas), crearíamos una estructura en SE11 (nombre ZSALUMNO) y luego:</p>
+  <pre><span class="kw">DATA</span>: <span class="vr">ls_alumno</span> <span class="kw">TYPE</span> zsalumno.</pre>
+
+  <h4>FLUJO DE DATOS ESTÁNDAR (INSERTAR DATOS EN LA TABLA DE BD)</h4>
   <ol>
     <li><code>CLEAR ls_alumno.</code> → Limpia la ficha actual.</li>
-    <li><code>ls_alumno-campo = 'Valor'.</code> → Rellena la ficha.</li>
-    <li><code>APPEND ls_alumno TO lt_alumnos.</code> → Mete la ficha en el archivador.</li>
-    <li><code>LOOP AT lt_alumnos INTO ls_alumno.</code> → Saca fichas una a una para leerlas.</li>
+    <li><code>ls_alumno-idalumno = '1'.</code> → Rellena los campos.</li>
+    <li><code>ls_alumno-nombre = 'Ana'.</code> → Rellena.</li>
+    <li><code>ls_alumno-nota = '7'.</code> → Rellena.</li>
+    <li><code>APPEND ls_alumno TO lt_alumnos.</code> → Mete la ficha en el archivador (opcional si luego vas a insertar directamente con INSERT).</li>
+    <li><code>INSERT ztalumnos FROM ls_alumno.</code> → Inserta el registro en la base de datos.</li>
+    <li><code>IF sy-subrc = 0. ... ENDIF.</code> → Comprobar éxito.</li>
   </ol>
 
-  <h3>6. TIPS DE FORMATEO EN PANTALLA (WRITE)</h3>
+  <h4>FLUJO DE DATOS ESTÁNDAR (LEER Y MOSTRAR)</h4>
+  <ol>
+    <li><code>SELECT * FROM ztalumnos INTO TABLE lt_alumnos.</code> → Carga todas las filas en la tabla interna.</li>
+    <li><code>LOOP AT lt_alumnos INTO ls_alumno.</code> → Recorre cada ficha.</li>
+    <li><code>WRITE: / ls_alumno-idalumno, ls_alumno-nombre, ls_alumno-nota.</code> → Muestra.</li>
+    <li><code>ENDLOOP.</code></li>
+  </ol>
+
+  <h3>5. TIPS DE FORMATEO EN PANTALLA (WRITE)</h3>
+  <p>Cuando usamos <code>WRITE</code> para listados, podemos mejorar la presentación:</p>
   <ul>
-    <li><code>WRITE: /10 'Texto'.</code> → Empieza a escribir en la columna 10.</li>
+    <li><code>WRITE: /5 'ID', 15 'Nombre', 30 'Nota'.</code> → Posiciones fijas.</li>
     <li><code>ULINE.</code> → Dibuja una línea horizontal.</li>
-    <li><code>FORMAT COLOR COL_HEADING.</code> → Cambia el color de la fila (ej: COL_HEADING para títulos).</li>
-    <li><code>lines( lt_tabla )</code> → Función para contar cuántas filas tiene una tabla interna.</li>
+    <li><code>FORMAT COLOR COL_HEADING.</code> → Cambia el color de la fila (por ejemplo para encabezados).</li>
+    <li><code>WRITE: / ls_alumno-idalumno, ls_alumno-nombre, ls_alumno-nota UNDER 'Nota'.</code> → Alinea debajo de un texto.</li>
+    <li><code>lines( lt_alumnos )</code> → Función para contar cuántas filas tiene una tabla interna.</li>
   </ul>
 
   <div class="code-wrap">
-    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Ejemplo de informe con datos de diccionario</div></div>
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Programa completo ZMOSTRAR_ALUMNOS</div></div>
     <pre><span class="kw">REPORT</span> zmostrar_alumnos.
 
-<span class="kw">DATA</span>: ls_alumno TYPE zsalumprc26sq,
-      lt_alumnos TYPE TABLE OF zsalumprc26sq.
+<span class="kw">DATA</span>: ls_alumno TYPE ztalumnos,
+      lt_alumnos TYPE TABLE OF ztalumnos.
 
 <span class="kw">START-OF-SELECTION</span>.
-  <span class="kw">SELECT</span> * <span class="kw">FROM</span> ztalumprc26sq <span class="kw">INTO TABLE</span> lt_alumnos.
+  <span class="kw">SELECT</span> * <span class="kw">FROM</span> ztalumnos <span class="kw">INTO TABLE</span> lt_alumnos
+    <span class="kw">WHERE</span> nota >= <span class="str">'5'</span>.                <span class="cmt">" Solo aprobados</span>
+
+  <span class="kw">IF</span> lt_alumnos <span class="kw">IS INITIAL</span>.
+    <span class="kw">MESSAGE</span> <span class="str">'No hay alumnos con esa nota'</span> <span class="kw">TYPE</span> <span class="str">'I'</span>.
+    <span class="kw">RETURN</span>.
+  <span class="kw">ENDIF</span>.
 
   <span class="kw">FORMAT</span> <span class="kw">COLOR</span> COL_HEADING.
-  <span class="kw">WRITE</span>: / <span class="nm">5</span> <span class="str">'ID'</span>, <span class="nm">15</span> <span class="str">'Nombre'</span>, <span class="nm">35</span> <span class="str">'Nota'</span>.
+  <span class="kw">WRITE</span>: / <span class="nm">3</span> <span class="str">'ID'</span>, <span class="nm">10</span> <span class="str">'Nombre'</span>, <span class="nm">30</span> <span class="str">'Nota'</span>.
   <span class="kw">ULINE</span>.
 
   <span class="kw">LOOP AT</span> lt_alumnos <span class="kw">INTO</span> ls_alumno.
     <span class="kw">FORMAT</span> <span class="kw">COLOR</span> OFF.
-    <span class="kw">WRITE</span>: / <span class="nm">5</span> ls_alumno-id, <span class="nm">15</span> ls_alumno-nombre, <span class="nm">35</span> ls_alumno-nota.
+    <span class="kw">WRITE</span>: / <span class="nm">3</span> ls_alumno-idalumno,
+             <span class="nm">10</span> ls_alumno-nombre,
+             <span class="nm">30</span> ls_alumno-nota.
   <span class="kw">ENDLOOP</span>.
 
   <span class="kw">ULINE</span>.
   <span class="kw">WRITE</span>: <span class="str">'Total alumnos:'</span>, <span class="kw">lines</span>( lt_alumnos ).</pre>
   </div>
 
+  <h3>6. OPERACIONES COMUNES CON TABLAS DE BD</h3>
+  <ul>
+    <li><strong>INSERT</strong>: <code>INSERT ztalumnos FROM ls_alumno.</code> o <code>INSERT ztalumnos FROM TABLE lt_alumnos.</code></li>
+    <li><strong>UPDATE</strong>: <code>UPDATE ztalumnos SET nota = '8' WHERE idalumno = '1'.</code> o <code>UPDATE ztalumnos FROM ls_alumno.</code></li>
+    <li><strong>DELETE</strong>: <code>DELETE FROM ztalumnos WHERE idalumno = '1'.</code></li>
+    <li><strong>SELECT SINGLE</strong>: <code>SELECT SINGLE * INTO ls_alumno FROM ztalumnos WHERE idalumno = p_id.</code> (para una sola fila)</li>
+  </ul>
+
   <div class="callout callout-green">
     <div class="callout-icon">✅</div>
     <div class="callout-body">
-      <strong>Resumen Día 8:</strong> El Diccionario es donde viven los moldes de datos. Las tablas (ZT...) guardan información permanentemente. Las estructuras (ZS...) son solo para el programa. En el código usamos <code>TYPE</code> para referenciarlas y creamos tablas internas para trabajar con los datos.
+      <strong>Resumen Día 8:</strong> El Diccionario es donde viven los moldes de datos. Las tablas (ZT...) guardan información permanentemente. Las estructuras (ZS...) son solo para el programa. En el código usamos <code>TYPE</code> para referenciarlas y creamos tablas internas para trabajar con los datos. Recuerda siempre comprobar <code>sy-subrc</code> después de cada operación de base de datos.
     </div>
   </div>
 </section>
