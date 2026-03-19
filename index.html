@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ABAP — La guía definitiva desde cero</title>
+<title>ABAP — La guía definitiva desde cero (completa + Día 8)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -43,7 +43,7 @@
 
   /* ── SIDEBAR ── */
   .sidebar {
-    width: 300px; min-width: 300px;
+    width: 340px; min-width: 340px;
     background: var(--surface);
     border-right: 1px solid var(--border);
     height: 100vh;
@@ -100,7 +100,7 @@
   .sidebar a:hover .dot, .sidebar a.active .dot { background: var(--accent); }
 
   /* ── MAIN ── */
-  .main { flex: 1; overflow-x: hidden; max-width: calc(100vw - 300px); }
+  .main { flex: 1; overflow-x: hidden; max-width: calc(100vw - 340px); }
 
   .hero {
     padding: 70px 60px 60px;
@@ -163,6 +163,7 @@
   .icon-red    { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.3); }
   .icon-purple { background: rgba(129,140,248,0.12);border: 1px solid rgba(129,140,248,0.3); }
   .icon-sky    { background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3); }
+  .icon-data   { background: rgba(34,197,94,0.12);  border: 1px solid rgba(34,197,94,0.3); } /* Nuevo para diccionario */
 
   .section-title-area h2 {
     font-family: 'Syne', sans-serif;
@@ -301,6 +302,7 @@
   .msg-e { background: rgba(239,68,68,0.08);  border-color: #ef4444; color: #f87171; }
   .msg-w { background: rgba(245,158,11,0.08); border-color: #f59e0b; color: #fbbf24; }
   .msg-i { background: rgba(59,130,246,0.08); border-color: #3b82f6; color: #93c5fd; }
+  .msg-a { background: rgba(239,68,68,0.15); border-color: #b91c1c; color: #fca5a5; }
 
   /* ── POINTER DIAGRAM ── */
   .pointer-viz {
@@ -508,7 +510,18 @@
     <a href="#alv-zero"><span class="dot"></span>Ocultar ceros (set_zero)</a>
     <a href="#alv-visibility"><span class="dot"></span>Visibilidad dinámica</a>
     <a href="#docking"><span class="dot"></span>Docking Container</a>
-    <a href="#oop"><span class="dot"></span>OOP — Clases y TRY/CATCH</a>
+    <a href="#oop"><span class="dot"></span>OOP — Clases y objetos</a>
+    <a href="#oop-avanzado"><span class="dot"></span>⚡ Constructor</a>
+    <a href="#oop-estaticos"><span class="dot"></span>⚡ Métodos estáticos</a>
+    <a href="#oop-getters"><span class="dot"></span>⚡ Getters</a>
+    <a href="#oop-comparativa"><span class="dot"></span>⚡ Comparativa métodos</a>
+    <a href="#message-avanzado"><span class="dot"></span>⚡ TYPE 'A' con TRY</a>
+
+    <div class="nav-group-title">Diccionario de Datos (DÍA 8)</div>
+    <a href="#diccionario"><span class="dot"></span>🏛️ SE11, SE14</a>
+    <a href="#jerarquia"><span class="dot"></span>Dominio → Elemento → Tabla</a>
+    <a href="#tabla-vs-estructura"><span class="dot"></span>Tabla vs Estructura</a>
+    <a href="#codigo-dic"><span class="dot"></span>Work Area y Tabla Interna</a>
   </nav>
 </aside>
 
@@ -520,8 +533,8 @@
     <h2>ABAP explicado como si<br><em>tuvieras 5 años.</em></h2>
     <p>Cada concepto, cada instrucción, cada variable. No se da nada por sabido. Todo se explica desde el principio, con ejemplos de tus propios programas.</p>
     <div class="stats-row">
-      <div class="stat-pill"><span class="n">35+</span><span class="lbl">Conceptos cubiertos</span></div>
-      <div class="stat-pill"><span class="n">8</span><span class="lbl">Programas analizados</span></div>
+      <div class="stat-pill"><span class="n">45+</span><span class="lbl">Conceptos cubiertos</span></div>
+      <div class="stat-pill"><span class="n">15</span><span class="lbl">Programas analizados</span></div>
       <div class="stat-pill"><span class="n">GUI</span><span class="lbl">8000.1.0.1161 · 64bit</span></div>
     </div>
   </div>
@@ -842,6 +855,18 @@
 <span class="vr">ls_cat</span>-nombre = <span class="str">'Laptop'</span>.   <span class="cmt">" Asigna 'Laptop' al campo nombre</span>
 <span class="kw">WRITE</span>: <span class="vr">ls_cat</span>-nombre.       <span class="cmt">" Muestra 'Laptop'</span></pre>
   </div>
+
+  <h3>Conversión implícita de tipos</h3>
+  <p>Cuando pasas un literal como <code>'2.0'</code> a un parámetro que espera <code>TYPE p</code> (número empaquetado), ABAP intenta convertirlo automáticamente. Esto funciona porque el sistema interpreta el texto como número. Sin embargo, es más claro y seguro usar literales numéricos directamente: <code>2</code> o <code>2.0</code>.</p>
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">zejercicio_02_sq_dia7.abap</div></div>
+    <pre><span class="cmt">" Esto funciona (convierte '2.0' a número)</span>
+go_calc->set_valores( i_val1 = <span class="str">'2.0'</span> i_val2 = <span class="str">'2.0'</span> ).
+
+<span class="cmt">" Pero esto es más correcto</span>
+go_calc->set_valores( i_val1 = <span class="nm">2</span> i_val2 = <span class="nm">2</span> ).</pre>
+  </div>
+  <p><span class="highlight">Recomendación:</span> Siempre que sea posible, pasa el tipo de dato exacto que espera el método. Evita depender de conversiones implícitas, aunque ABAP sea muy permisivo.</p>
 
   <div class="callout callout-red">
     <div class="callout-icon">🚨</div>
@@ -1734,13 +1759,13 @@
   <p>Aquí <code>&lt;grupo&gt;</code> contiene el valor del campo por el que agrupas (ej. 'IT', 'HR'). <code>&lt;miembro&gt;</code> es cada fila dentro de ese grupo.</p>
 </section>
 
-<!-- ══════════ 24. MESSAGE ══════════ -->
+<!-- ══════════ 24. MESSAGE — TIPOS ══════════ -->
 <section class="section" id="messages">
   <div class="section-header">
     <div class="section-icon icon-amber">💬</div>
     <div class="section-title-area">
-      <h2>MESSAGE — Comunicarse con el usuario</h2>
-      <div class="subtitle">Los diferentes tipos de mensajes y su comportamiento</div>
+      <h2>MESSAGE — Tipos y comportamiento</h2>
+      <div class="subtitle">Cómo comunicarte con el usuario</div>
     </div>
   </div>
 
@@ -1750,11 +1775,12 @@
   <div class="msg-demo msg-e">TYPE 'E' (Error): aparece en rojo. El programa se detiene y el usuario debe corregir algo en la pantalla de selección.</div>
   <div class="msg-demo msg-w">TYPE 'W' (Warning): aparece en amarillo. El programa continúa.</div>
   <div class="msg-demo msg-i">TYPE 'I' (Information): abre una ventana popup. El programa se pausa hasta que el usuario cierra la ventana.</div>
+  <div class="msg-demo msg-a">TYPE 'A' (Abort): ventana roja de error. Normalmente termina el programa, pero con TRY/CATCH podemos controlarlo.</div>
 
   <div class="code-wrap">
     <div class="code-header">
       <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
-      <div class="code-label">Ejemplos</div>
+      <div class="code-label">Ejemplos básicos</div>
     </div>
     <pre><span class="kw">MESSAGE</span> <span class="str">'Producto añadido'</span> <span class="kw">TYPE</span> <span class="str">'S'</span>.
 <span class="kw">MESSAGE</span> <span class="str">'Error: seleccione un valor'</span> <span class="kw">TYPE</span> <span class="str">'E'</span>.
@@ -1767,6 +1793,29 @@
     <div class="callout-body">
       <strong>DISPLAY LIKE</strong>: puedes hacer que un mensaje tipo 'S' se vea rojo (como error) pero sin bloquear: <code>MESSAGE 'Aviso' TYPE 'S' DISPLAY LIKE 'E'.</code>
     </div>
+  </div>
+
+  <h3 id="message-avanzado">🆕 Capturar TYPE 'A' con TRY/CATCH (evitar que termine)</h3>
+  <p>Si envolvemos un <code>MESSAGE TYPE 'A'</code> en un <code>TRY ... CATCH</code>, podemos capturar la excepción y decidir qué hacer, por ejemplo, preguntar al usuario si realmente quiere salir.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Confirmación sin salir del programa</div></div>
+    <pre><span class="kw">DATA</span>: lv_confirm TYPE abap_bool.
+
+<span class="kw">TRY</span>.
+    <span class="kw">MESSAGE</span> <span class="str">'¿Seguro que quieres cerrar?'</span> <span class="kw">TYPE</span> <span class="str">'A'</span>.
+    <span class="cmt">" Si llegamos aquí, el usuario pulsó 'Finalizar' (Enter)</span>
+    lv_confirm = abap_true.
+  <span class="kw">CATCH</span> cx_sy_abap_message.
+    <span class="cmt">" Si pulsó Cancelar (ESC) o la X, capturamos la excepción</span>
+    lv_confirm = abap_false.
+<span class="kw">ENDTRY</span>.
+
+<span class="kw">IF</span> lv_confirm = abap_true.
+  <span class="kw">LEAVE PROGRAM</span>.
+<span class="kw">ELSE</span>.
+  <span class="kw">MESSAGE</span> <span class="str">'Continuamos...'</span> <span class="kw">TYPE</span> <span class="str">'S'</span>.
+<span class="kw">ENDIF</span>.</pre>
   </div>
 </section>
 
@@ -1837,7 +1886,7 @@
     <div class="section-icon icon-green">🔤</div>
     <div class="section-title-area">
       <h2>Strings y operaciones matemáticas</h2>
-      <div class="subtitle">to_upper, concatenar, MOD, DIV, **</div>
+      <div class="subtitle">to_upper, to_lower, strlen, concatenar, MOD, DIV, **</div>
     </div>
   </div>
 
@@ -1849,6 +1898,38 @@
     <li><code>CONCATENATE a b INTO c SEPARATED BY space</code> une textos.</li>
   </ul>
 
+  <h3>Uso de funciones de texto dentro de clases</h3>
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">zejercicio_04_sq_dia7.abap</div></div>
+    <pre><span class="kw">CLASS</span> lcl_textos <span class="kw">DEFINITION</span>.
+  <span class="kw">PUBLIC SECTION</span>.
+    <span class="kw">METHODS</span> set_texto <span class="kw">IMPORTING</span> texto <span class="kw">TYPE</span> string.
+    <span class="kw">METHODS</span> txt_to_mayus.
+    <span class="kw">METHODS</span> txt_to_minus.
+    <span class="kw">METHODS</span> txt_contar.
+  <span class="kw">PRIVATE SECTION</span>.
+    <span class="kw">DATA</span> gv_texto <span class="kw">TYPE</span> string.
+<span class="kw">ENDCLASS</span>.
+
+<span class="kw">CLASS</span> lcl_textos <span class="kw">IMPLEMENTATION</span>.
+  <span class="kw">METHOD</span> set_texto.
+    gv_texto = texto.
+  <span class="kw">ENDMETHOD</span>.
+
+  <span class="kw">METHOD</span> txt_to_mayus.
+    <span class="kw">WRITE</span>: / to_upper( gv_texto ).
+  <span class="kw">ENDMETHOD</span>.
+
+  <span class="kw">METHOD</span> txt_to_minus.
+    <span class="kw">WRITE</span>: / to_lower( gv_texto ).
+  <span class="kw">ENDMETHOD</span>.
+
+  <span class="kw">METHOD</span> txt_contar.
+    <span class="kw">WRITE</span>: / |Longitud: { strlen( gv_texto ) }|.
+  <span class="kw">ENDMETHOD</span>.
+<span class="kw">ENDCLASS</span>.</pre>
+  </div>
+
   <h3>Operadores matemáticos especiales</h3>
   <ul>
     <li><code>MOD</code>: resto de la división (ej. <code>7 MOD 2 = 1</code>).</li>
@@ -1857,13 +1938,8 @@
   </ul>
 
   <div class="code-wrap">
-    <div class="code-header">
-      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
-      <div class="code-label">Ejemplos</div>
-    </div>
-    <pre>&lt;fs_nombre&gt;-nombre = to_upper( &lt;fs_nombre&gt;-nombre ).
-
-<span class="kw">IF</span> numero <span class="kw">MOD</span> <span class="nm">2</span> = <span class="nm">0</span>.
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">zejercicio_01_sq.abap</div></div>
+    <pre><span class="kw">IF</span> numero <span class="kw">MOD</span> <span class="nm">2</span> = <span class="nm">0</span>.
   <span class="kw">WRITE</span>: <span class="str">'Par'</span>.
 <span class="kw">ENDIF</span>.
 
@@ -1887,6 +1963,9 @@ resultado = base ** exponente.</pre>
     <li><code>WRITE texto.</code> escribe en la línea actual.</li>
     <li><code>WRITE: / texto.</code> salta a una nueva línea antes de escribir.</li>
     <li><code>WRITE: / 'Nombre:', ls_persona-nombre.</code> varios elementos separados por comas.</li>
+    <li><code>WRITE: /10 'Texto'.</code> empieza a escribir en la columna 10.</li>
+    <li><code>ULINE.</code> dibuja una línea horizontal.</li>
+    <li><code>FORMAT COLOR COL_HEADING.</code> cambia el color de la fila (para títulos).</li>
   </ul>
 
   <p>Para programas serios con tablas de datos, se usa ALV en lugar de WRITE.</p>
@@ -2131,10 +2210,7 @@ gr_column->set_currency( 'EUR' ).</pre>
   <p>Los métodos OOP lanzan <strong>excepciones</strong> cuando ocurre un error. Debes capturarlas con <code>TRY ... CATCH ... ENDTRY</code>.</p>
 
   <div class="code-wrap">
-    <div class="code-header">
-      <div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div>
-      <div class="code-label">Ejemplo con TRY/CATCH</div>
-    </div>
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Ejemplo con TRY/CATCH</div></div>
     <pre><span class="kw">TRY</span>.
     cl_salv_table=>factory(
       <span class="kw">IMPORTING</span> r_salv_table = gr_alv
@@ -2145,21 +2221,271 @@ gr_column->set_currency( 'EUR' ).</pre>
 <span class="kw">ENDTRY</span>.</pre>
   </div>
 
-  <div class="sep">FIN DE LA GUÍA</div>
+  <h3 id="oop-avanzado">🆕 Constructor (<code>CONSTRUCTOR</code>)</h3>
+  <p>El <strong>constructor</strong> es un método especial que se ejecuta <strong>automáticamente</strong> cuando creas un objeto con <code>CREATE OBJECT</code>. Se usa para inicializar los atributos.</p>
 
-  <div style="text-align:center; padding: 30px 0 20px; color:var(--muted);">
-    <div style="font-family:'JetBrains Mono',monospace; font-size:13px; margin-bottom:10px; color: var(--accent);">
-      ✦ Guía basada en tus propios programas ✦
-    </div>
-    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">
-      SAP GUI 8000.1.0.1161 · 64bit
-    </div>
-    <div style="font-size:14px; color: var(--muted);">
-      Cada concepto que aparece aquí lo has escrito tú. Ahora también lo entiendes. 💪
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">zejercicio_05_sq_dia7.abap</div></div>
+    <pre><span class="kw">CLASS</span> lcl_alumno <span class="kw">DEFINITION</span>.
+  <span class="kw">PUBLIC SECTION</span>.
+    <span class="kw">METHODS</span> constructor
+      <span class="kw">IMPORTING</span> i_nombre <span class="kw">TYPE</span> string
+                i_nota   <span class="kw">TYPE</span> p <span class="kw">DECIMALS</span> 2.
+    ...
+  <span class="kw">PRIVATE SECTION</span>.
+    <span class="kw">DATA</span>: gv_nombre <span class="kw">TYPE</span> string,
+          gv_nota   <span class="kw">TYPE</span> p <span class="kw">DECIMALS</span> 2.
+<span class="kw">ENDCLASS</span>.
+
+<span class="kw">CLASS</span> lcl_alumno <span class="kw">IMPLEMENTATION</span>.
+  <span class="kw">METHOD</span> constructor.
+    gv_nombre = i_nombre.
+    gv_nota   = i_nota.
+    <span class="kw">" Aquí podríamos llamar a un método privado que calcule algo</span>
+  <span class="kw">ENDMETHOD</span>.
+  ...
+<span class="kw">ENDCLASS</span>.</pre>
+  </div>
+
+  <p><strong>Creación del objeto:</strong></p>
+  <pre><span class="kw">DATA</span> go_alumno <span class="kw">TYPE REF TO</span> lcl_alumno.
+<span class="kw">CREATE OBJECT</span> go_alumno
+  <span class="kw">EXPORTING</span>
+    i_nombre = <span class="str">'Ana'</span>
+    i_nota   = <span class="nm">7.5</span>.</pre>
+
+  <p><strong>Características:</strong></p>
+  <ul>
+    <li>Solo puede haber <strong>un</strong> constructor por clase.</li>
+    <li>No tiene <code>RETURNING</code>, solo <code>IMPORTING</code> y opcionalmente <code>EXCEPTIONS</code>.</li>
+    <li>Se ejecuta <strong>antes</strong> de que puedas usar cualquier otro método del objeto.</li>
+    <li>Si no declaras ningún constructor, ABAP proporciona uno vacío por defecto.</li>
+  </ul>
+
+  <h3 id="oop-estaticos">🆕 Métodos estáticos (<code>CLASS-METHODS</code>)</h3>
+  <p>Los <strong>métodos estáticos</strong> pertenecen a la <strong>clase</strong>, no a los objetos. Se pueden llamar sin necesidad de crear un objeto. Se declaran con <code>CLASS-METHODS</code> y se llaman con <code>=></code>.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">zejercicio_01_sq_dia7.abap</div></div>
+    <pre><span class="kw">CLASS</span> lcl_calculadora <span class="kw">DEFINITION</span>.
+  <span class="kw">PUBLIC SECTION</span>.
+    <span class="kw">CLASS-METHODS</span> sumar
+      <span class="kw">IMPORTING</span> i_val1 <span class="kw">TYPE</span> p
+                i_val2 <span class="kw">TYPE</span> p
+      <span class="kw">RETURNING</span> <span class="kw">VALUE</span>(r_result) <span class="kw">TYPE</span> p.
+<span class="kw">ENDCLASS</span>.
+
+<span class="kw">CLASS</span> lcl_calculadora <span class="kw">IMPLEMENTATION</span>.
+  <span class="kw">METHOD</span> sumar.
+    r_result = i_val1 + i_val2.
+  <span class="kw">ENDMETHOD</span>.
+<span class="kw">ENDCLASS</span>.
+
+<span class="kw">START-OF-SELECTION</span>.
+  <span class="kw">DATA</span>: lv_res <span class="kw">TYPE</span> p.
+  lv_res = lcl_calculadora=>sumar( i_val1 = <span class="nm">2</span> i_val2 = <span class="nm">3</span> ).
+  <span class="kw">WRITE</span>: / lv_res.</pre>
+  </div>
+
+  <h3 id="oop-getters">🆕 Atributos privados y getters</h3>
+  <p>Los atributos se declaran en la sección <code>PRIVATE SECTION</code> para que solo los métodos de la clase puedan acceder a ellos. Si necesitas consultar su valor desde fuera, creas <strong>getters</strong> (métodos que devuelven el valor).</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Getters en lcl_alumno</div></div>
+    <pre><span class="kw">CLASS</span> lcl_alumno <span class="kw">DEFINITION</span>.
+  <span class="kw">PUBLIC SECTION</span>.
+    <span class="kw">METHODS</span> get_nombre <span class="kw">RETURNING</span> <span class="kw">VALUE</span>(r_nombre) <span class="kw">TYPE</span> string.
+    <span class="kw">METHODS</span> get_nota   <span class="kw">RETURNING</span> <span class="kw">VALUE</span>(r_nota)   <span class="kw">TYPE</span> p <span class="kw">DECIMALS</span> 2.
+  <span class="kw">PRIVATE SECTION</span>.
+    <span class="kw">DATA</span>: gv_nombre <span class="kw">TYPE</span> string,
+          gv_nota   <span class="kw">TYPE</span> p <span class="kw">DECIMALS</span> 2.
+<span class="kw">ENDCLASS</span>.
+
+<span class="kw">CLASS</span> lcl_alumno <span class="kw">IMPLEMENTATION</span>.
+  <span class="kw">METHOD</span> get_nombre.
+    r_nombre = gv_nombre.
+  <span class="kw">ENDMETHOD</span>.
+  <span class="kw">METHOD</span> get_nota.
+    r_nota = gv_nota.
+  <span class="kw">ENDMETHOD</span>.
+<span class="kw">ENDCLASS</span>.</pre>
+  </div>
+
+  <p><strong>Uso:</strong></p>
+  <pre><span class="kw">WRITE</span>: / go_alumno->get_nombre( ), go_alumno->get_nota( ).</pre>
+</section>
+
+<!-- ══════════ 36.1 COMPARATIVA MÉTODOS (nueva) ══════════ -->
+<section class="section" id="oop-comparativa">
+  <div class="section-header">
+    <div class="section-icon icon-purple">⚖️</div>
+    <div class="section-title-area">
+      <h2>Comparativa: métodos de instancia vs estáticos</h2>
+      <div class="subtitle">Cuándo usar cada uno</div>
     </div>
   </div>
 
+  <table class="ref-table">
+    <thead><tr><th>Característica</th><th>Método de instancia</th><th>Método estático</th></tr></thead>
+    <tbody>
+      <tr><td>Declaración</td><td><code>METHODS</code></td><td><code>CLASS-METHODS</code></td></tr>
+      <tr><td>Llamada</td><td><code>objeto->metodo( )</code></td><td><code>clase=>metodo( )</code></td></tr>
+      <tr><td>Acceso a atributos de instancia</td><td>Sí</td><td>No</td></tr>
+      <tr><td>Necesita <code>CREATE OBJECT</code></td><td>Sí</td><td>No</td></tr>
+      <tr><td>Ejemplo típico</td><td><code>alumno->mostrar_datos( )</code></td><td><code>calculadora=>sumar( 2, 3 )</code></td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>Regla práctica:</strong> Usa métodos de instancia cuando necesites trabajar con los datos particulares de un objeto (sus atributos). Usa métodos estáticos para utilidades generales, cálculos que no dependan de un estado o para crear objetos (patrón factory).</p>
 </section>
+
+<!-- ══════════ 37. DICCIONARIO DE DATOS (DÍA 8) ══════════ -->
+<section class="section" id="diccionario">
+  <div class="section-header">
+    <div class="section-icon icon-data">🗂️</div>
+    <div class="section-title-area">
+      <h2>Diccionario de Datos (DÍA 8)</h2>
+      <div class="subtitle">Transacciones SE11, SE14 y cómo crear tus propias tablas</div>
+    </div>
+  </div>
+
+  <p>El Diccionario de Datos de ABAP es donde se definen todos los objetos de datos persistentes: tablas, dominios, elementos de dato, estructuras, etc. Aquí guardamos los moldes que luego usaremos en nuestros programas.</p>
+
+  <h3>1. RUTAS DE NAVEGACIÓN (TRANSACCIONES CLAVE)</h3>
+  <ul>
+    <li><strong>[SE11]</strong> – ABAP Dictionary: El cuartel general. Aquí creamos:
+      <ul>
+        <li>Dominios (técnico: tipo, longitud)</li>
+        <li>Elementos de Datos (semántico: etiquetas, textos)</li>
+        <li>Tablas Transparentes (base de datos física)</li>
+        <li>Estructuras (solo en memoria, no persistentes)</li>
+      </ul>
+    </li>
+    <li><strong>[SE38]</strong> – ABAP Editor: Donde escribimos el código para mover los datos.</li>
+    <li><strong>[SE14]</strong> – Database Utility: Para "arreglar" tablas cuando cambian físicamente y dan error de activación.</li>
+  </ul>
+
+  <h3>2. JERARQUÍA DE CREACIÓN (EL ORDEN IMPORTA)</h3>
+  <p>Para crear un campo desde cero, el camino es de abajo hacia arriba:</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">A</div>
+      <div class="step-body">
+        <strong>DOMINIO (Domain)</strong>
+        <p>Define el tipo técnico: data type (CHAR, DATS, INT4...), número de caracteres, y si tiene valores fijos (range).</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">B</div>
+      <div class="step-body">
+        <strong>ELEMENTO DE DATO (Data Element)</strong>
+        <p>Asigna el dominio y añade las etiquetas (texto corto, medio, largo) que verá el usuario.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">C</div>
+      <div class="step-body">
+        <strong>TABLA / ESTRUCTURA</strong>
+        <p>Introduces el componente (nombre técnico del campo) y su tipo (el elemento de dato anterior).</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>3. CONFIGURACIÓN DE TABLAS (CAMPOS CRÍTICOS EN SE11)</h3>
+  <p>Al crear una tabla (siempre con prefijo Z o Y), hay 3 paradas obligatorias antes de activar:</p>
+  <ul>
+    <li><strong>MANDT:</strong> Primer campo siempre. Tipo: <code>MANDT</code>. Marcado como Key. Es el cliente.</li>
+    <li><strong>Clave (Key):</strong> Campos que identifican el registro (ej. IDAL, IDMAT).</li>
+    <li><strong>Technical Settings (botón en la barra superior):</strong>
+      <ul>
+        <li><code>Data Class</code>: APPL0 (datos maestros, que no crecen mucho).</li>
+        <li><code>Size Category</code>: 0 (de 0 a pocos miles de registros).</li>
+        <li><code>Buffering</code>: Buffering not allowed (por defecto para aprendizaje).</li>
+      </ul>
+    </li>
+    <li><strong>Enhancement Category</strong> (menú Extras → Enhancement Category): seleccionar "Can be enhanced (character-type or numeric)".</li>
+  </ul>
+
+  <h3>4. DIFERENCIAS: TABLA VS ESTRUCTURA</h3>
+  <table class="ref-table">
+    <thead><tr><th>Atributo</th><th>Tabla (ZTALUM...)</th><th>Estructura (ZSALUM...)</th></tr></thead>
+    <tbody>
+      <tr><td>Persistencia</td><td>SI (se guarda en disco)</td><td>NO (solo en RAM)</td></tr>
+      <tr><td>Campo MANDT</td><td>OBLIGATORIO</td><td>PROHIBIDO (no se usa)</td></tr>
+      <tr><td>Uso principal</td><td>Guardar datos reales</td><td>Molde para el código (work area)</td></tr>
+      <tr><td>Technical Settings</td><td>REQUERIDO</td><td>NO TIENE</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5. EL PUENTE AL CÓDIGO (SE38) – CONCEPTOS "LINEA" Y "TABLA"</h3>
+  <p>Para manipular los datos en un Reporte, definimos:</p>
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Work Area y Tabla Interna</div></div>
+    <pre><span class="kw">DATA</span>: <span class="vr">ls_alumno</span> <span class="kw">TYPE</span> zsalumprc26sq.  <span class="cmt">" LINEA DE TRABAJO (Work Area) – una 'ficha' única</span>
+<span class="kw">DATA</span>: <span class="vr">lt_alumnos</span> <span class="kw">TYPE TABLE OF</span> zsalumprc26sq. <span class="cmt">" TABLA INTERNA – el 'archivador' de fichas</span></pre>
+  </div>
+
+  <p><strong>FLUJO DE DATOS ESTÁNDAR:</strong></p>
+  <ol>
+    <li><code>CLEAR ls_alumno.</code> → Limpia la ficha actual.</li>
+    <li><code>ls_alumno-campo = 'Valor'.</code> → Rellena la ficha.</li>
+    <li><code>APPEND ls_alumno TO lt_alumnos.</code> → Mete la ficha en el archivador.</li>
+    <li><code>LOOP AT lt_alumnos INTO ls_alumno.</code> → Saca fichas una a una para leerlas.</li>
+  </ol>
+
+  <h3>6. TIPS DE FORMATEO EN PANTALLA (WRITE)</h3>
+  <ul>
+    <li><code>WRITE: /10 'Texto'.</code> → Empieza a escribir en la columna 10.</li>
+    <li><code>ULINE.</code> → Dibuja una línea horizontal.</li>
+    <li><code>FORMAT COLOR COL_HEADING.</code> → Cambia el color de la fila (ej: COL_HEADING para títulos).</li>
+    <li><code>lines( lt_tabla )</code> → Función para contar cuántas filas tiene una tabla interna.</li>
+  </ul>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Ejemplo de informe con datos de diccionario</div></div>
+    <pre><span class="kw">REPORT</span> zmostrar_alumnos.
+
+<span class="kw">DATA</span>: ls_alumno TYPE zsalumprc26sq,
+      lt_alumnos TYPE TABLE OF zsalumprc26sq.
+
+<span class="kw">START-OF-SELECTION</span>.
+  <span class="kw">SELECT</span> * <span class="kw">FROM</span> ztalumprc26sq <span class="kw">INTO TABLE</span> lt_alumnos.
+
+  <span class="kw">FORMAT</span> <span class="kw">COLOR</span> COL_HEADING.
+  <span class="kw">WRITE</span>: / <span class="nm">5</span> <span class="str">'ID'</span>, <span class="nm">15</span> <span class="str">'Nombre'</span>, <span class="nm">35</span> <span class="str">'Nota'</span>.
+  <span class="kw">ULINE</span>.
+
+  <span class="kw">LOOP AT</span> lt_alumnos <span class="kw">INTO</span> ls_alumno.
+    <span class="kw">FORMAT</span> <span class="kw">COLOR</span> OFF.
+    <span class="kw">WRITE</span>: / <span class="nm">5</span> ls_alumno-id, <span class="nm">15</span> ls_alumno-nombre, <span class="nm">35</span> ls_alumno-nota.
+  <span class="kw">ENDLOOP</span>.
+
+  <span class="kw">ULINE</span>.
+  <span class="kw">WRITE</span>: <span class="str">'Total alumnos:'</span>, <span class="kw">lines</span>( lt_alumnos ).</pre>
+  </div>
+
+  <div class="callout callout-green">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <strong>Resumen Día 8:</strong> El Diccionario es donde viven los moldes de datos. Las tablas (ZT...) guardan información permanentemente. Las estructuras (ZS...) son solo para el programa. En el código usamos <code>TYPE</code> para referenciarlas y creamos tablas internas para trabajar con los datos.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FINAL ══════════ -->
+<div class="sep">FIN DE LA GUÍA</div>
+
+<div style="text-align:center; padding: 30px 0 20px; color:var(--muted);">
+  <div style="font-family:'JetBrains Mono',monospace; font-size:13px; margin-bottom:10px; color: var(--accent);">
+    ✦ Guía basada en tus propios programas ✦
+  </div>
+  <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">
+    SAP GUI 8000.1.0.1161 · 64bit · Incluye Día 8: Diccionario de Datos
+  </div>
+  <div style="font-size:14px; color: var(--muted);">
+    Cada concepto que aparece aquí lo has escrito tú. Ahora también lo entiendes. 💪
+  </div>
+</div>
 
   </div><!-- /content -->
 </main><!-- /main -->
