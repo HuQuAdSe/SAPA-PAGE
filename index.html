@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ABAP — La guía definitiva desde cero (completa + Día 8)</title>
+<title>ABAP — La guía definitiva desde cero (completa + Día 8 + Sistema PR26)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -163,7 +163,7 @@
   .icon-red    { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.3); }
   .icon-purple { background: rgba(129,140,248,0.12);border: 1px solid rgba(129,140,248,0.3); }
   .icon-sky    { background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3); }
-  .icon-data   { background: rgba(34,197,94,0.12);  border: 1px solid rgba(34,197,94,0.3); } /* Nuevo para diccionario */
+  .icon-data   { background: rgba(34,197,94,0.12);  border: 1px solid rgba(34,197,94,0.3); } /* Para diccionario */
 
   .section-title-area h2 {
     font-family: 'Syne', sans-serif;
@@ -522,6 +522,14 @@
     <a href="#jerarquia"><span class="dot"></span>Dominio → Elemento → Tabla</a>
     <a href="#tabla-vs-estructura"><span class="dot"></span>Tabla vs Estructura</a>
     <a href="#codigo-dic"><span class="dot"></span>Work Area y Tabla Interna</a>
+
+    <div class="nav-group-title">Sistema PR26 (Gestión de Tareas)</div>
+    <a href="#pr26-arquitectura"><span class="dot"></span>Arquitectura tabla ZTTRPRC26SQ</a>
+    <a href="#pr26-campos"><span class="dot"></span>Campos y technical settings</a>
+    <a href="#pr26-sm30"><span class="dot"></span>Generador de mantenimiento (SM30)</a>
+    <a href="#pr26-sql"><span class="dot"></span>SQL en ABAP (SELECT, MODIFY)</a>
+    <a href="#pr26-report"><span class="dot"></span>Reporte interactivo dinámico</a>
+    <a href="#pr26-resumen"><span class="dot"></span>Valores clave</a>
   </nav>
 </aside>
 
@@ -533,8 +541,8 @@
     <h2>ABAP explicado como si<br><em>tuvieras 5 años.</em></h2>
     <p>Cada concepto, cada instrucción, cada variable. No se da nada por sabido. Todo se explica desde el principio, con ejemplos de tus propios programas.</p>
     <div class="stats-row">
-      <div class="stat-pill"><span class="n">45+</span><span class="lbl">Conceptos cubiertos</span></div>
-      <div class="stat-pill"><span class="n">15</span><span class="lbl">Programas analizados</span></div>
+      <div class="stat-pill"><span class="n">60+</span><span class="lbl">Conceptos cubiertos</span></div>
+      <div class="stat-pill"><span class="n">20</span><span class="lbl">Programas analizados</span></div>
       <div class="stat-pill"><span class="n">GUI</span><span class="lbl">8000.1.0.1161 · 64bit</span></div>
     </div>
   </div>
@@ -2530,6 +2538,301 @@ Enhancement Category (menú Extras): "Can be enhanced (character-type or numeric
   </div>
 </section>
 
+<!-- ══════════ 38. SISTEMA PR26: GESTIÓN DE TAREAS ══════════ -->
+<section class="section" id="pr26-arquitectura">
+  <div class="section-header">
+    <div class="section-icon icon-data">📋</div>
+    <div class="section-title-area">
+      <h2>Manual Integral de Desarrollo: Gestión de Tareas (Sistema PR26)</h2>
+      <div class="subtitle">Arquitectura completa de una tabla Z y su mantenimiento</div>
+    </div>
+  </div>
+
+  <p>A continuación desarrollaremos un caso práctico completo: la creación de una tabla de tareas <code>ZTTRPRC26SQ</code>, su mantenimiento con SM30 y un reporte interactivo que permita al usuario gestionar las tareas. Este ejemplo integra todos los conceptos vistos: diccionario, eventos, pantallas dinámicas, SQL y buenas prácticas.</p>
+
+  <h3 id="pr26-campos">1. ARQUITECTURA DE LA BASE DE DATOS (TRANSACCIÓN SE11)</h3>
+  <p>La base de todo es la Tabla Transparente. No es solo un almacén; es la definición de cómo SAP entiende tus datos.</p>
+
+  <h4>PASOS DE CREACIÓN:</h4>
+  <ol>
+    <li>Entrar en SE11, seleccionar 'Database Table' y nombre: <code>ZTTRPRC26SQ</code>.</li>
+    <li>Pestaña 'Delivery and Maintenance':
+      <ul>
+        <li><strong>Delivery Class:</strong> <code>'A'</code> (Application table, master and transaction data).</li>
+        <li><strong>Data Browser/Table Maint.:</strong> <code>'Display/Maintenance Allowed'</code> (Vital para SM30).</li>
+      </ul>
+    </li>
+  </ol>
+
+  <h4>CONFIGURACIÓN DE CAMPOS (ANATOMÍA):</h4>
+  <table class="ref-table">
+    <thead><tr><th>Campo</th><th>Tipo</th><th>Elemento de dato</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td>MANDT</td><td>CLNT 3</td><td>MANDT</td><td>Cliente. Siempre el primero y clave.</td></tr>
+      <tr><td>ID_TAREA</td><td>CHAR 10</td><td>ZD_TAREA_ID (crear)</td><td>Identificador único alfanumérico. Clave.</td></tr>
+      <tr><td>DESCR</td><td>CHAR 100</td><td>ZD_TAREA_DESCR</td><td>Descripción. Usamos CHAR y no STRING porque STRING en tablas de base de datos requiere gestión de memoria compleja y puede dar errores de activación.</td></tr>
+      <tr><td>PRIO</td><td>INT1</td><td>ZD_TAREA_PRIO</td><td>Entero de un byte (0-255). Eficiencia pura para niveles.</td></tr>
+      <tr><td>TIEMPO_EST</td><td>FLTP</td><td>ZD_TIEMPO_EST</td><td>Punto flotante para cálculos precisos. (En reportes requiere conversión).</td></tr>
+      <tr><td>TIEMPO_REAL</td><td>FLTP</td><td>ZD_TIEMPO_REAL</td><td>Ídem.</td></tr>
+      <tr><td>TERMINADO</td><td>CHAR 1</td><td>ZD_BOOLEAN</td><td>Actúa como booleano: 'X' o ' '.</td></tr>
+      <tr><td>ACTIVA</td><td>CHAR 1</td><td>ZD_BOOLEAN</td><td>Ídem.</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>Nota:</strong> Los elementos de dato ZD_... deben crearse previamente. Por ejemplo, ZD_BOOLEAN es un dominio CHAR1 con valores fijos: 'X' (Verdadero) y ' ' (Falso).</p>
+
+  <h4>CONFIGURACIÓN TÉCNICA (EL CORAZÓN DE LA TABLA):</h4>
+  <ul>
+    <li>Botón 'Technical Settings':
+      <ul>
+        <li><strong>Data Class:</strong> APPL1 (Datos transaccionales, cambian con frecuencia).</li>
+        <li><strong>Size Category:</strong> 0 (Mínimo, de 0 a 140.000 registros aproximadamente).</li>
+        <li><strong>Buffering:</strong> No permitido (para asegurar lectura real de base de datos).</li>
+      </ul>
+    </li>
+    <li>Menú Extras -> Enhancement Category:
+      <ul>
+        <li>Seleccionar <strong>'Can be enhanced (character-type or numeric)'</strong>.</li>
+        <li>Explicación: Si no se marca, SAP bloquea la tabla por seguridad contra modificaciones de estructura, impidiendo su activación (Fósforo).</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h3 id="pr26-sm30">2. EL GENERADOR DE MANTENIMIENTO (SM30 / INTERFAZ DE USUARIO ESTÁNDAR)</h3>
+  <p>Herramienta que permite al usuario final meter datos sin saber programar.</p>
+
+  <h4>RUTA: SE11 -> Utilities -> Table Maintenance Generator.</h4>
+  <p>PARÁMETROS DE CONFIGURACIÓN EXACTOS:</p>
+  <ul>
+    <li><strong>Authorization Group:</strong> PR26 (Define quién tiene permiso para tocar la tabla).</li>
+    <li><strong>Function Group:</strong> ZPR26 (El contenedor de código donde SAP "escribe" el actualizador).</li>
+    <li><strong>Maintenance Type:</strong> 'One Step'. Significa que la lista y el detalle están en la misma pantalla.</li>
+    <li><strong>Maintenance Screens:</strong> Screen number '100'. Es el identificador de la imagen dinámica que genera SAP.</li>
+  </ul>
+
+  <h4>REFINAMIENTO DE TEXTOS:</h4>
+  <p>En SE11 -> Fields -> Pestaña 'Field Label'. Rellenar los textos (Short, Medium, Long). Esto hace que en la SM30 ponga "Fecha de Inicio" y no "F_INI".</p>
+
+  <h3 id="pr26-sql">3. MANIPULACIÓN DE DATOS MEDIANTE SQL (EL MOTOR ABAP)</h3>
+  <p>Cómo movemos la información entre el disco duro (DB) y la memoria (RAM).</p>
+
+  <h4>LECTURA (SELECT):</h4>
+  <ul>
+    <li><code>SELECT SINGLE * ... INTO ls_wa</code>: Busca UNA fila específica por su clave. Es la más eficiente para validaciones (ej: "¿Existe este ID?").</li>
+    <li><code>SELECT * ... INTO TABLE lt_tab</code>: Vuelca TODOS los registros de la DB a una tabla interna en la memoria RAM del programa.</li>
+    <li><code>FROM</code>: Indica la tabla de origen en el Diccionario.</li>
+    <li><code>INTO / INTO TABLE</code>: Indica el destino (Estructura simple o Tabla interna).</li>
+  </ul>
+
+  <h4>ESCRITURA (MODIFY / INSERT / DELETE):</h4>
+  <ul>
+    <li><code>MODIFY ztable FROM ls_wa</code>: La navaja suiza. Busca el ID. Si lo encuentra, hace UPDATE. Si no lo encuentra, hace INSERT. Es el comando estándar para pantallas donde el usuario puede tanto crear como editar.</li>
+    <li><code>DELETE FROM ztable WHERE id = ...</code>: Elimina físicamente el registro.</li>
+    <li><code>FROM TABLE lt_tab</code>: Versión masiva. En lugar de ir registro a registro, SAP procesa toda la tabla interna de un solo viaje a la base de datos, optimizando el rendimiento (Performance).</li>
+  </ul>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Ejemplo de SELECT y MODIFY</div></div>
+    <pre><span class="kw">DATA</span>: ls_tarea TYPE zttrprc26sq,
+      lt_tareas TYPE TABLE OF zttrprc26sq.
+
+<span class="cmt">" Leer una tarea específica</span>
+<span class="kw">SELECT SINGLE</span> * <span class="kw">INTO</span> ls_tarea
+  <span class="kw">FROM</span> zttrprc26sq
+  <span class="kw">WHERE</span> id_tarea = <span class="str">'T001'</span>.
+<span class="kw">IF</span> <span class="sy">sy-subrc</span> = 0.
+  <span class="kw">WRITE</span>: / <span class="str">'Descripción:'</span>, ls_tarea-descr.
+<span class="kw">ENDIF</span>.
+
+<span class="cmt">" Modificar o insertar (upsert)</span>
+ls_tarea-id_tarea = <span class="str">'T002'</span>.
+ls_tarea-descr    = <span class="str">'Nueva tarea'</span>.
+ls_tarea-prio     = 1.
+<span class="kw">MODIFY</span> zttrprc26sq <span class="kw">FROM</span> ls_tarea.
+<span class="kw">IF</span> <span class="sy">sy-subrc</span> = 0.
+  <span class="kw">COMMIT WORK</span>.
+  <span class="kw">MESSAGE</span> <span class="str">'Tarea guardada'</span> <span class="kw">TYPE</span> <span class="str">'S'</span>.
+<span class="kw">ENDIF</span>.</pre>
+  </div>
+
+  <h3 id="pr26-report">4. EL REPORT INTERACTIVO (FRONT-END DINÁMICO)</h3>
+  <p>Creación de una interfaz que "reacciona" a las acciones del usuario. A continuación, un reporte completo que permite seleccionar modo de operación (Alta, Ver, Borrar) mediante radio buttons, activa/desactiva campos según la selección y ejecuta la acción correspondiente.</p>
+
+  <h4>TRUCO DEL TIPO 'F' (FLOAT):</h4>
+  <ul>
+    <li>Problema: <code>PARAMETERS p_est TYPE zttrprc26sq-tiempo_est</code> falla (Type F not allowed).</li>
+    <li>Solución: Declarar el parámetro como <code>TYPE p DECIMALS 2</code>. Al hacer el <code>MODIFY ... FROM ls_wa</code>, ABAP convierte automáticamente el decimal 'P' al formato científico 'F' de la tabla.</li>
+  </ul>
+
+  <h4>EVENTO AT SELECTION-SCREEN OUTPUT (EL "CAMALEÓN"):</h4>
+  <ul>
+    <li>Se ejecuta cada vez que la pantalla se refresca (ej: al pulsar un Radio Button).</li>
+    <li><code>LOOP AT SCREEN</code>: Recorre cada elemento (caja de texto, checkbox, botón).</li>
+    <li><code>screen-group1 = 'M1'</code>: Permite agrupar campos con una etiqueta (MODIF ID) para no programar campo por campo.</li>
+    <li>Atributos clave:
+      <ul>
+        <li><code>screen-input = 0</code>: El campo se vuelve de "Solo Lectura".</li>
+        <li><code>screen-active = 0</code>: El campo se oculta (no ocupa espacio).</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h4>LÓGICA DE CONTROL (CASE / IF):</h4>
+  <ul>
+    <li>Usamos Radio Buttons (RB_ALTA, RB_VER, RB_BORR) para crear un menú.</li>
+    <li><code>CASE</code>: Bifurca el código hacia diferentes subrutinas (PERFORM).</li>
+    <li><code>sy-subrc</code>: Variable del sistema que nos dice si la última operación tuvo éxito (0) o falló (4 o superior).</li>
+  </ul>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="code-dots"><span class="cd1"></span><span class="cd2"></span><span class="cd3"></span></div><div class="code-label">Reporte ZGESTION_TAREAS (código completo)</div></div>
+    <pre><span class="kw">REPORT</span> zgestion_tareas.
+
+<span class="cmt">" Definición de tipos locales (opcional)</span>
+<span class="kw">TYPES</span>: <span class="kw">BEGIN OF</span> ty_tarea,
+         id_tarea   TYPE zttrprc26sq-id_tarea,
+         descr      TYPE zttrprc26sq-descr,
+         prio       TYPE zttrprc26sq-prio,
+         tiempo_est TYPE p DECIMALS 2,
+         tiempo_real TYPE p DECIMALS 2,
+         terminado  TYPE c LENGTH 1,
+         activa     TYPE c LENGTH 1,
+       <span class="kw">END OF</span> ty_tarea.
+
+<span class="cmt">" Pantalla de selección</span>
+<span class="kw">SELECTION-SCREEN BEGIN OF BLOCK</span> b1 <span class="kw">WITH FRAME TITLE</span> TEXT-001.
+  <span class="kw">PARAMETERS</span>: rb_alta <span class="kw">RADIOBUTTON GROUP</span> modo <span class="kw">USER-COMMAND</span> click <span class="kw">DEFAULT</span> <span class="str">'X'</span>,
+              rb_ver  <span class="kw">RADIOBUTTON GROUP</span> modo,
+              rb_borr <span class="kw">RADIOBUTTON GROUP</span> modo.
+<span class="kw">SELECTION-SCREEN END OF BLOCK</span> b1.
+
+<span class="kw">SELECTION-SCREEN BEGIN OF BLOCK</span> b2 <span class="kw">WITH FRAME TITLE</span> TEXT-002.
+  <span class="kw">PARAMETERS</span>: p_id   TYPE zttrprc26sq-id_tarea <span class="kw">MODIF ID</span> inp,
+              p_descr TYPE zttrprc26sq-descr    <span class="kw">MODIF ID</span> inp,
+              p_prio  TYPE zttrprc26sq-prio     <span class="kw">MODIF ID</span> inp,
+              p_est   TYPE p DECIMALS 2          <span class="kw">MODIF ID</span> inp,  <span class="cmt">" tipo P para evitar error de FLTP</span>
+              p_real  TYPE p DECIMALS 2          <span class="kw">MODIF ID</span> inp,
+              p_ter   <span class="kw">AS CHECKBOX</span>               <span class="kw">MODIF ID</span> inp,
+              p_act   <span class="kw">AS CHECKBOX</span>               <span class="kw">MODIF ID</span> inp.
+<span class="kw">SELECTION-SCREEN END OF BLOCK</span> b2.
+
+<span class="cmt">" Evento INITIALIZATION (opcional, aquí podríamos cargar defaults)</span>
+<span class="kw">INITIALIZATION</span>.
+  <span class="cmt">" Por ejemplo, poner un valor por defecto</span>
+  p_act = <span class="str">'X'</span>.
+
+<span class="cmt">" AT SELECTION-SCREEN OUTPUT: control de pantalla dinámico</span>
+<span class="kw">AT SELECTION-SCREEN OUTPUT</span>.
+  <span class="kw">LOOP AT</span> <span class="sy">SCREEN</span>.
+    <span class="kw">CASE</span> <span class="sy">screen</span>-group1.
+      <span class="kw">WHEN</span> <span class="str">'INP'</span>.
+        <span class="kw">IF</span> rb_alta = <span class="str">'X'</span>.
+          <span class="sy">screen</span>-input = 1.   <span class="cmt">" editable</span>
+          <span class="sy">screen</span>-active = 1.  <span class="cmt">" visible</span>
+        <span class="kw">ELSEIF</span> rb_ver = <span class="str">'X'</span>.
+          <span class="sy">screen</span>-input = 0.   <span class="cmt">" solo lectura</span>
+          <span class="sy">screen</span>-active = 1.
+        <span class="kw">ELSEIF</span> rb_borr = <span class="str">'X'</span>.
+          <span class="sy">screen</span>-active = 0.   <span class="cmt">" oculto (solo dejamos visible el ID)</span>
+          <span class="kw">IF</span> <span class="sy">screen</span>-name = <span class="str">'P_ID'</span>.
+            <span class="sy">screen</span>-active = 1.
+            <span class="sy">screen</span>-input = 1.
+          <span class="kw">ENDIF</span>.
+        <span class="kw">ENDIF</span>.
+    <span class="kw">ENDCASE</span>.
+    <span class="kw">MODIFY</span> <span class="sy">SCREEN</span>.
+  <span class="kw">ENDLOOP</span>.
+
+<span class="cmt">" AT SELECTION-SCREEN: validaciones y acciones al pulsar botones</span>
+<span class="kw">AT SELECTION-SCREEN</span>.
+  <span class="kw">CASE</span> <span class="sy">sy-ucomm</span>.
+    <span class="kw">WHEN</span> <span class="str">'CLICK'</span>.   <span class="cmt">" cambio de radio button, ya se maneja en OUTPUT</span>
+      <span class="cmt">" No hacemos nada, solo se redibuja</span>
+    <span class="kw">WHEN OTHERS</span>.
+      <span class="cmt">" Si el usuario pulsa Enter o Ejecutar, ejecutamos la acción correspondiente</span>
+      <span class="kw">PERFORM</span> ejecutar_accion.
+  <span class="kw">ENDCASE</span>.
+
+<span class="kw">START-OF-SELECTION</span>.
+  <span class="kw">PERFORM</span> ejecutar_accion.
+
+<span class="cmt">" Subrutina principal</span>
+<span class="kw">FORM</span> ejecutar_accion.
+  <span class="kw">DATA</span>: ls_tarea TYPE zttrprc26sq.
+
+  <span class="kw">CASE</span> <span class="str">'X'</span>.
+    <span class="kw">WHEN</span> rb_alta.
+      <span class="cmt">" Validar que el ID no esté vacío</span>
+      <span class="kw">IF</span> p_id <span class="kw">IS INITIAL</span>.
+        <span class="kw">MESSAGE</span> <span class="str">'El ID es obligatorio'</span> <span class="kw">TYPE</span> <span class="str">'E'</span>.
+        <span class="kw">RETURN</span>.
+      <span class="kw">ENDIF</span>.
+      <span class="cmt">" Rellenar estructura</span>
+      ls_tarea-id_tarea   = p_id.
+      ls_tarea-descr      = p_descr.
+      ls_tarea-prio       = p_prio.
+      ls_tarea-tiempo_est = p_est.    <span class="cmt">" conversión automática P -> F</span>
+      ls_tarea-tiempo_real = p_real.
+      ls_tarea-terminado   = p_ter.
+      ls_tarea-activa      = p_act.
+      <span class="kw">MODIFY</span> zttrprc26sq <span class="kw">FROM</span> ls_tarea.
+      <span class="kw">IF</span> <span class="sy">sy-subrc</span> = 0.
+        <span class="kw">COMMIT WORK</span>.
+        <span class="kw">MESSAGE</span> <span class="str">'Tarea guardada correctamente'</span> <span class="kw">TYPE</span> <span class="str">'S'</span>.
+      <span class="kw">ELSE</span>.
+        <span class="kw">ROLLBACK WORK</span>.
+        <span class="kw">MESSAGE</span> <span class="str">'Error al guardar'</span> <span class="kw">TYPE</span> <span class="str">'E'</span>.
+      <span class="kw">ENDIF</span>.
+
+    <span class="kw">WHEN</span> rb_ver.
+      <span class="kw">SELECT SINGLE</span> * <span class="kw">INTO</span> ls_tarea
+        <span class="kw">FROM</span> zttrprc26sq
+        <span class="kw">WHERE</span> id_tarea = p_id.
+      <span class="kw">IF</span> <span class="sy">sy-subrc</span> = 0.
+        <span class="kw">WRITE</span>: / <span class="str">'ID:'</span>, ls_tarea-id_tarea,
+               / <span class="str">'Descripción:'</span>, ls_tarea-descr,
+               / <span class="str">'Prioridad:'</span>, ls_tarea-prio,
+               / <span class="str">'T. Estimado:'</span>, ls_tarea-tiempo_est,
+               / <span class="str">'T. Real:'</span>, ls_tarea-tiempo_real,
+               / <span class="str">'Terminado:'</span>, ls_tarea-terminado,
+               / <span class="str">'Activa:'</span>, ls_tarea-activa.
+      <span class="kw">ELSE</span>.
+        <span class="kw">MESSAGE</span> <span class="str">'Tarea no encontrada'</span> <span class="kw">TYPE</span> <span class="str">'E'</span>.
+      <span class="kw">ENDIF</span>.
+
+    <span class="kw">WHEN</span> rb_borr.
+      <span class="kw">DELETE</span> <span class="kw">FROM</span> zttrprc26sq <span class="kw">WHERE</span> id_tarea = p_id.
+      <span class="kw">IF</span> <span class="sy">sy-subrc</span> = 0.
+        <span class="kw">COMMIT WORK</span>.
+        <span class="kw">MESSAGE</span> <span class="str">'Tarea eliminada'</span> <span class="kw">TYPE</span> <span class="str">'S'</span>.
+      <span class="kw">ELSE</span>.
+        <span class="kw">MESSAGE</span> <span class="str">'Tarea no existe o no se pudo eliminar'</span> <span class="kw">TYPE</span> <span class="str">'E'</span>.
+      <span class="kw">ENDIF</span>.
+  <span class="kw">ENDCASE</span>.
+<span class="kw">ENDFORM</span>.</pre>
+  </div>
+
+  <h3 id="pr26-resumen">5. RESUMEN DE VALORES CLAVE PARA PRÁCTICAS</h3>
+  <table class="ref-table">
+    <thead><tr><th>Concepto</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td>Mandante</td><td>100/200/300 (según entorno)</td></tr>
+      <tr><td>Grupo de Autorización</td><td>PR26</td></tr>
+      <tr><td>Grupo de Funciones</td><td>ZPR26</td></tr>
+      <tr><td>Pantalla Actualizador</td><td>100</td></tr>
+      <tr><td>Tipos de datos comunes</td><td>CHAR (textos), INT1 (pequeños), P/DEC (precios/tiempos)</td></tr>
+      <tr><td>Booleano en ABAP</td><td>'X' = verdadero, espacio = falso</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-green">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <strong>Resumen Sistema PR26:</strong> Hemos creado una tabla Z con todos los parámetros técnicos necesarios, generado su mantenimiento estándar (SM30) y desarrollado un reporte interactivo que utiliza radio buttons, modificación dinámica de pantalla y operaciones SQL. Este ejemplo es completamente funcional y puede usarse como base para cualquier desarrollo propio.
+    </div>
+  </div>
+</section>
+
 <!-- ══════════ FINAL ══════════ -->
 <div class="sep">FIN DE LA GUÍA</div>
 
@@ -2538,7 +2841,7 @@ Enhancement Category (menú Extras): "Can be enhanced (character-type or numeric
     ✦ Guía basada en tus propios programas ✦
   </div>
   <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">
-    SAP GUI 8000.1.0.1161 · 64bit · Incluye Día 8: Diccionario de Datos
+    SAP GUI 8000.1.0.1161 · 64bit · Incluye Día 8 y Sistema PR26
   </div>
   <div style="font-size:14px; color: var(--muted);">
     Cada concepto que aparece aquí lo has escrito tú. Ahora también lo entiendes. 💪
